@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ciprian Badic — Fotografie de arhitectură & real estate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1a1a1a;--muted:#9a9a9a;--line:#e7e7e7;--bg:#ffffff;--slot:#ececea;
+    --sidebar:300px;--pad:clamp(24px,4vw,64px);--gutter:44px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
+  img{display:block;max-width:100%}
+  a{color:inherit;text-decoration:none}
+
+  /* Sidebar */
+  .sidebar{position:fixed;top:0;left:0;width:var(--sidebar);height:100vh;padding:48px var(--pad);display:flex;flex-direction:column;background:var(--bg);z-index:50}
+  .brand{display:flex;align-items:center;gap:12px;margin-bottom:56px;cursor:pointer}
+  .brand .name{font-weight:600;letter-spacing:.18em;font-size:15px;line-height:1.2}
+  .brand .name small{display:block;font-weight:400;letter-spacing:.13em;font-size:9px;color:var(--muted);margin-top:3px}
+  nav.main{display:flex;flex-direction:column;gap:2px}
+  nav.main a{font-size:15px;color:var(--muted);padding:7px 0;transition:color .18s;cursor:pointer}
+  nav.main a:hover,nav.main a.active{color:var(--ink)}
+  nav.main .spacer{height:24px}
+  .social{margin-top:auto;display:flex;gap:16px;padding-top:32px}
+  .social a{color:var(--muted);transition:color .18s}
+  .social a:hover{color:var(--ink)}
+  .social svg{width:19px;height:19px}
+
+  main{margin-left:var(--sidebar)}
+
+  /* Views */
+  .view{display:none}
+  .view.active{display:block}
+
+  /* Slideshow */
+  .stage{height:100vh;padding:var(--gutter) var(--gutter) 0 0;display:flex;flex-direction:column}
+  .proj-head{display:flex;justify-content:space-between;align-items:baseline;padding-bottom:14px;flex:0 0 auto}
+  .proj-head .back{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);cursor:pointer;transition:color .18s}
+  .proj-head .back:hover{color:var(--ink)}
+  .proj-head .ptitle{font-size:14px;font-weight:500}
+  .proj-head .ptitle small{color:var(--muted);font-weight:400;margin-left:10px}
+  .viewer{flex:1;position:relative;min-height:0;background:var(--bg);overflow:hidden}
+  .viewer .slide{position:absolute;inset:0;opacity:0;transition:opacity .5s ease;width:100%;height:100%;object-fit:contain;object-position:center}
+  .viewer .slide.on{opacity:1}
+  .controls{display:flex;flex-direction:column;gap:10px;padding:18px 0 22px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .controls .nav-line span{cursor:pointer;transition:color .18s}
+  .controls .nav-line span:hover{color:var(--ink)}
+  .controls .nav-line .sep{margin:0 8px;cursor:default}
+  .controls .thumbs-toggle{cursor:pointer;transition:color .18s;width:max-content}
+  .controls .thumbs-toggle:hover{color:var(--ink)}
+  .controls .counter{color:#c2c2c2;letter-spacing:.1em}
+  .thumbs{display:none;grid-template-columns:repeat(6,1fr);gap:12px;padding:0 var(--gutter) var(--gutter) 0}
+  .thumbs.open{display:grid}
+  .thumbs .t{aspect-ratio:3/2;background:var(--slot) center/cover;cursor:pointer;outline:0 solid var(--ink);transition:outline-width .12s}
+  .thumbs .t.active{outline-width:2px}
+
+  /* Sub-sections */
+  section.block{padding:var(--pad);padding-top:56px}
+  .h-title{font-size:clamp(24px,2.6vw,34px);font-weight:600;letter-spacing:-.01em;margin-bottom:26px}
+  .lead{font-size:clamp(15px,1.4vw,18px);color:#4a4a4a;max-width:640px;font-weight:300;line-height:1.65}
+  .slot{background:var(--slot);display:flex;align-items:center;justify-content:center;color:#b6b6b0;font-size:11px;letter-spacing:.14em;text-transform:uppercase;text-align:center;padding:0 12px}
+
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .grid .item{cursor:pointer}
+  .grid .item .frame{aspect-ratio:1/1;background:var(--slot) center/cover;overflow:hidden;margin-bottom:12px;transition:opacity .2s}
+  .grid .item:hover .frame{opacity:.88}
+  .grid .item h4{font-size:14px;font-weight:500}
+  .grid .item p{font-size:13px;color:var(--muted)}
+
+  .svc-list{display:grid;grid-template-columns:repeat(3,1fr);gap:40px 48px;margin-top:8px}
+  .svc h3{font-size:16px;font-weight:600;margin-bottom:8px}
+  .svc .num{font-size:12px;color:var(--muted);letter-spacing:.14em;margin-bottom:14px}
+  .svc p{font-size:14px;color:#5a5a5a;font-weight:300;line-height:1.6}
+
+  .about{display:grid;grid-template-columns:1fr 420px;gap:56px;align-items:start}
+  .txt{max-width:640px}
+  .txt p{margin-bottom:18px;font-size:15px;color:#4a4a4a;font-weight:300;line-height:1.7}
+  .about .portrait .slot{aspect-ratio:4/5}
+
+  form{max-width:720px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .field{margin-bottom:22px}
+  label{display:block;font-size:13px;margin-bottom:8px;color:#333}
+  label span{color:var(--muted)}
+  input,textarea{width:100%;font-family:inherit;font-size:15px;padding:12px 14px;border:1px solid var(--line);background:#fafafa;color:var(--ink);transition:border-color .18s}
+  input:focus,textarea:focus{outline:none;border-color:#bdbdbd}
+  textarea{resize:vertical;min-height:150px}
+  button.submit{margin-top:6px;background:var(--ink);color:#fff;border:none;padding:15px 40px;font-size:13px;letter-spacing:.16em;text-transform:uppercase;font-family:inherit;cursor:pointer;transition:opacity .18s}
+  button.submit:hover{opacity:.82}
+
+  footer{display:none;padding:32px var(--pad);border-top:1px solid var(--line);justify-content:space-between;font-size:12px;color:var(--muted);flex-wrap:wrap;gap:12px}
+  body.show-footer footer{display:flex}
+
+  /* Mobile */
+  @media(max-width:900px){
+    .sidebar{position:sticky;flex-direction:row;align-items:center;width:100%;height:auto;padding:16px var(--pad);border-bottom:1px solid var(--line);gap:18px;flex-wrap:wrap}
+    .brand{margin-bottom:0;margin-right:auto}
+    nav.main{flex-direction:row;flex-wrap:wrap;gap:2px 16px}
+    nav.main a{padding:4px 0;font-size:14px}
+    nav.main .spacer{display:none}
+    .social{margin:0;padding:0}
+    main{margin-left:0}
+    .stage{height:auto;padding:var(--pad) var(--pad) 0;display:block}
+    .viewer{background:transparent;overflow:visible;height:auto;display:flex;flex-direction:column;gap:14px}
+    .viewer .slide{position:static;opacity:1;transition:none;width:100%;height:auto;object-fit:contain}
+    .controls,.thumbs{display:none !important}
+    .proj-head{padding-top:8px}
+    .grid,.svc-list{grid-template-columns:repeat(2,1fr)}
+    .about{grid-template-columns:1fr}
+  }
+  @media(max-width:560px){.grid,.svc-list,.row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="brand" data-view="portofoliu">
+    <span class="name">CIPRIAN BADIC<small>FOTOGRAFIE DE ARHITECTURĂ</small></span>
+  </div>
+  <nav class="main">
+    <a data-view="portofoliu" class="active">Portofoliu</a>
+    <a data-view="proiecte">Proiecte</a>
+    <a data-view="servicii">Servicii</a>
+    <span class="spacer"></span>
+    <a data-view="despre">Despre</a>
+    <a data-view="contact">Contact</a>
+  </nav>
+  <div class="social">
+    <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
+  </div>
+</aside>
+
+<main>
+  <!-- PORTOFOLIU -->
+  <div class="view active" id="v-portofoliu">
+    <div class="stage" id="stage-home">
+      <div class="viewer"></div>
+      <div class="thumbs"></div>
+      <div class="controls">
+        <div class="nav-line"><span class="prev">Prev</span><span class="sep">/</span><span class="next">Next</span></div>
+        <div class="thumbs-toggle">Show thumbnails</div>
+        <div class="counter"><span class="cur">01</span> / <span class="total">01</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROIECTE -->
+  <div class="view" id="v-proiecte">
+    <section class="block">
+      <h2 class="h-title">Proiecte</h2>
+      <p class="lead">O selecție de lucrări rezidențiale, comerciale și de real estate. Apasă pe un proiect pentru a vedea toate imaginile.</p>
+      <div class="grid" id="grid-proiecte" style="margin-top:32px"></div>
+    </section>
+  </div>
+
+  <!-- PROIECT INDIVIDUAL (galerie) -->
+  <div class="view" id="v-project"></div>
+
+  <!-- SERVICII -->
+  <div class="view" id="v-servicii">
+    <section class="block">
+      <h2 class="h-title">Servicii</h2>
+      <div class="svc-list">
+        <div class="svc"><div class="num">01</div><h3>Arhitectură</h3><p>Documentarea completă a unei clădiri: exterior, interior, detaliu și context. Imagini care comunică viziunea de design.</p></div>
+        <div class="svc"><div class="num">02</div><h3>Real estate</h3><p>Fotografie imobiliară care vinde: proprietăți rezidențiale și comerciale prezentate curat, luminos, atrăgător.</p></div>
+        <div class="svc"><div class="num">03</div><h3>Interior design</h3><p>Punerea în valoare a amenajărilor și a materialelor, pentru designeri, showroom-uri și publicații.</p></div>
+        <div class="svc"><div class="num">04</div><h3>Aerian & drone</h3><p>Perspective aeriene pentru context urban, anvergură și relația clădirii cu împrejurimile.</p></div>
+        <div class="svc"><div class="num">05</div><h3>Hospitality</h3><p>Hoteluri, restaurante și spații publice fotografiate pentru brand, marketing și rezervări.</p></div>
+        <div class="svc"><div class="num">06</div><h3>Twilight & lifestyle</h3><p>Cadre la ora albastră și scene cu prezență umană care dau viață și atmosferă spațiului.</p></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- DESPRE -->
+  <div class="view" id="v-despre">
+    <section class="block">
+      <div class="txt">
+        <h2 class="h-title">Despre</h2>
+        <p>Lucrez alături de arhitecți, dezvoltatori, designeri și agenții pentru a traduce spațiul construit în imagini clare și expresive.</p>
+        <p>Abordarea mea combină sensibilitate arhitecturală, viziune artistică și rigoare tehnică. Fiecare proiect este fotografiat cu atenție la lumină, geometrie și detaliu, astfel încât rezultatul să reprezinte corect intenția de design.</p>
+      </div>
+    </section>
+  </div>
+
+  <!-- CONTACT -->
+  <div class="view" id="v-contact">
+    <section class="block">
+      <h2 class="h-title">Contact</h2>
+      <p class="lead" style="margin-bottom:36px">Pentru orice solicitare de preț sau rezervare, completează formularul de mai jos. Include cât mai multe informații relevante: locația proiectului, numărul de imagini, modul de utilizare și termenul de finalizare.</p>
+      <form onsubmit="event.preventDefault();this.reset();alert('Mulțumim! Mesajul a fost trimis.');">
+        <div class="row">
+          <div class="field"><label>Prenume <span>(obligatoriu)</span></label><input type="text" required></div>
+          <div class="field"><label>Nume <span>(obligatoriu)</span></label><input type="text" required></div>
+        </div>
+        <div class="field"><label>Adresă de email <span>(obligatoriu)</span></label><input type="email" required></div>
+        <div class="field"><label>Subiect <span>(obligatoriu)</span></label><input type="text" required></div>
+        <div class="field"><label>Mesaj <span>(obligatoriu)</span></label><textarea required></textarea></div>
+        <button type="submit" class="submit">Trimite</button>
+      </form>
+    </section>
+  </div>
+
+  <footer>
+    <span>© 2026 Ciprian Badic. Toate drepturile rezervate.</span>
+    <span>București, România · hello@ciprianbadic.ro</span>
+  </footer>
+</main>
+
+<script>
+  /* ---------- DATE ---------- */
+  const HERO=[
+    'HIGHLIGHT/Golden Tulip 2.png','HIGHLIGHT/GoldenTulipReceptie.png','HIGHLIGHT/Golden Tulip 4.png',
+    'HIGHLIGHT/c9_110_2 copy.png','HIGHLIGHT/c9_110_8.png','HIGHLIGHT/building.png',
+    'HIGHLIGHT/Untitleddasd1.png','HIGHLIGHT/2 copy.jpg'
+  ];
+
+  const projects=[
+    {id:'golden-tulip', title:'Golden Tulip', meta:'Hotel · București', dir:'Proiect 1 - Golden Tulip',
+      photos:['GoldenTulipReceptie.png','GoldenTulipDinning.png','Golden Tulip 4.png','Golden Tulip 3.png','Golden Tulip 2.png','Golden Tulip 1.png','Golden Tulip 5.png','GOldenTulipBaie11.png','GoldenTulipBaie2.png']},
+    {id:'amber-house', title:'Amber House', meta:'Booking.com · București', dir:'Proiect 2 - Amber House',
+      photos:['2 copy.jpg','Untitled-6-6.jpg','Untitled-2-2.jpg','Untitled-3-3.jpg','3 copy.jpg']},
+    {id:'barbu', title:'Barbu Apartment', meta:'Apartment · București', dir:'Proiect 3 - Barbu Appartment',
+      photos:['1.png','2.png','3.png','4.png','5.png','6.png','7.png','8.png','9.png','10.png','11.png','12.jpg']},
+    {id:'rent-1', title:'Rent Apartment I', meta:'Apartment · București', dir:'Rent Appartment 1',
+      photos:['livingbun.png','livingbiroubun.png','living2point.jpg','incercare.png','dormitor2pointcatre.jpg','Untitled1.png','bucatarie1202point.png','bucatatie1201point.png','bucatarie120balcon.png','baie1point.jpg']},
+    {id:'rent-2', title:'Rent Apartment II', meta:'Apartment · București', dir:'rent App 2',
+      photos:['c9_110_2 copy.png','c9_110_4.png','c9_110_5.png','c9_110_6.png','c9_110_7.png','c9_110_8.png','c9_110_9.png','c9_110_10.png','c9_110_11.png']},
+    {id:'rent-3', title:'Rent Apartment III', meta:'Apartment · București', dir:'rent app 3',
+      photos:['living.png','bucatarie1161point.png','baiemaibuna.png','Untitled1.png','Untitled2.png','Untitleddasd1.png']},
+    {id:'personal', title:'Personal', meta:'București', dir:'personal',
+      photos:['NationalRugbyStadiumAdT.png','insta.png','building.png']}
+  ];
+  projects.forEach(p=>{p.full=p.photos.map(f=>p.dir+'/'+f);});
+
+  /* ---------- SLIDESHOW (reutilizabil) ---------- */
+  function initSlideshow(stage, photos){
+    const viewer=stage.querySelector('.viewer');
+    const thumbs=stage.querySelector('.thumbs');
+    const prev=stage.querySelector('.prev');
+    const next=stage.querySelector('.next');
+    const toggle=stage.querySelector('.thumbs-toggle');
+    const cur=stage.querySelector('.cur');
+    const total=stage.querySelector('.total');
+    viewer.innerHTML='';thumbs.innerHTML='';
+    let idx=0;
+    photos.forEach((src,i)=>{
+      const d=document.createElement('img');
+      d.className='slide'+(i===0?' on':'');
+      d.src=src;d.alt='';d.loading=i===0?'eager':'lazy';
+      viewer.appendChild(d);
+      const t=document.createElement('div');
+      t.className='t'+(i===0?' active':'');
+      t.style.backgroundImage=`url("${src}")`;
+      t.addEventListener('click',()=>go(i));
+      thumbs.appendChild(t);
+    });
+    const slideEls=[...viewer.children], thumbEls=[...thumbs.children];
+    if(total)total.textContent=photos.length.toString().padStart(2,'0');
+    function go(n){
+      idx=(n+photos.length)%photos.length;
+      slideEls.forEach((e,i)=>e.classList.toggle('on',i===idx));
+      thumbEls.forEach((e,i)=>e.classList.toggle('active',i===idx));
+      if(cur)cur.textContent=(idx+1).toString().padStart(2,'0');
+    }
+    prev.addEventListener('click',()=>go(idx-1));
+    next.addEventListener('click',()=>go(idx+1));
+    toggle.addEventListener('click',function(){
+      const open=thumbs.classList.toggle('open');
+      this.textContent=open?'Hide thumbnails':'Show thumbnails';
+    });
+    stage._go=go;stage._idx=()=>idx;
+  }
+
+  initSlideshow(document.getElementById('stage-home'),HERO);
+
+  /* ---------- GRID PROIECTE ---------- */
+  const grid=document.getElementById('grid-proiecte');
+  projects.forEach(p=>{
+    const item=document.createElement('div');
+    item.className='item';
+    item.innerHTML=`<div class="frame" style="background-image:url('${p.full[0]}')"></div><h4>${p.title}</h4><p>${p.meta}</p>`;
+    item.addEventListener('click',()=>openProject(p.id));
+    grid.appendChild(item);
+  });
+
+  /* ---------- VIEW PROIECT ---------- */
+  const projView=document.getElementById('v-project');
+  function openProject(id){
+    const p=projects.find(x=>x.id===id);
+    projView.innerHTML=`
+      <div class="stage">
+        <div class="proj-head">
+          <span class="ptitle">${p.title}<small>${p.meta}</small></span>
+          <span class="back" id="proj-back">← Proiecte</span>
+        </div>
+        <div class="viewer"></div>
+        <div class="thumbs"></div>
+        <div class="controls">
+          <div class="nav-line"><span class="prev">Prev</span><span class="sep">/</span><span class="next">Next</span></div>
+          <div class="thumbs-toggle">Show thumbnails</div>
+          <div class="counter"><span class="cur">01</span> / <span class="total">01</span></div>
+        </div>
+      </div>`;
+    initSlideshow(projView.querySelector('.stage'),p.full);
+    projView.querySelector('#proj-back').addEventListener('click',()=>showView('proiecte'));
+    showView('project',false);
+  }
+
+  /* ---------- SWITCH VIEWS ---------- */
+  const views=[...document.querySelectorAll('.view')];
+  function showView(name,updateNav=true){
+    views.forEach(v=>v.classList.toggle('active',v.id==='v-'+name));
+    if(updateNav)document.querySelectorAll('nav.main a').forEach(a=>a.classList.toggle('active',a.dataset.view===name));
+    document.body.classList.toggle('show-footer', name!=='portofoliu' && name!=='project');
+    window.scrollTo(0,0);
+  }
+  document.querySelectorAll('[data-view]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();showView(a.dataset.view);}));
+
+  document.addEventListener('keydown',e=>{
+    const active=document.querySelector('.view.active');
+    if(!active)return;
+    const stage=active.querySelector('.stage');
+    if(!stage||!stage._go)return;
+    if(e.key==='ArrowLeft')stage._go(stage._idx()-1);
+    if(e.key==='ArrowRight')stage._go(stage._idx()+1);
+  });
+</script>
+</body>
+</html>
