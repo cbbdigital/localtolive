@@ -1637,6 +1637,21 @@ window.addEventListener('resize', () => { buildDots(); settle(); });
 buildDots();
 settle();
 
+/* trackpad: swipe orizontal cu doua degete */
+(function(){
+  const mask = track.parentElement;
+  let accum = 0, lock = false;
+  mask.addEventListener('wheel', (e) => {
+    if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return; // doar intentie orizontala
+    e.preventDefault();               // opreste si gestul de back/forward al browserului
+    if (lock) return;
+    accum += e.deltaX;
+    const threshold = 40;
+    if (accum > threshold)      { index++; settle(); accum = 0; lock = true; setTimeout(()=>lock=false, 320); }
+    else if (accum < -threshold){ index--; settle(); accum = 0; lock = true; setTimeout(()=>lock=false, 320); }
+  }, { passive: false });
+})();
+
 /* ── apply modal ── */
 const applyModal = document.getElementById('applyModal');
 const openApply = document.getElementById('openApply');
