@@ -95,6 +95,7 @@ header p { color: var(--gray); margin-top: 1rem; font-size: 1.05rem; }
   opacity: 0;
   transition: max-height 0.6s ease, opacity 0.4s ease, padding 0.5s ease;
 }
+.detail { scroll-margin-top: 24px; }
 .detail.open { max-height: 3200px; opacity: 1; padding: 0 2rem 6rem; }
 
 .detail-top {
@@ -999,7 +1000,7 @@ document.querySelectorAll('.card:not(.disabled)').forEach(card => {
       setTimeout(() => {
         panel.scrollIntoView({behavior:'smooth', block:'start'});
         initStatsAnimation(panel);
-      }, 100);
+      }, 650);
     }
   });
 });
