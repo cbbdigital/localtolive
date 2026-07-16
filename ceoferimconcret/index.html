@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Servicii — Local to Live</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --black: #000;
+  --white: #f5f5f7;
+  --gray: #86868b;
+  --card: #1a1a1c;
+  --card-2: #131314;
+  --blue: #2997ff;
+  --accent: #ff453a;
+}
+
+body {
+  font-family: 'Space Grotesk', -apple-system, sans-serif;
+  background: var(--black);
+  color: var(--white);
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
+
+/* header */
+header { padding: 5rem 2rem 2rem; text-align: center; position: relative; }
+
+.back-btn {
+  position: absolute; top: 1.5rem; left: 1.5rem;
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  color: var(--blue); background: rgba(41,151,255,0.1);
+  border: 1px solid rgba(41,151,255,0.3);
+  padding: 0.6rem 1.1rem 0.6rem 0.9rem; border-radius: 24px;
+  font-size: 0.85rem; font-weight: 500;
+  text-decoration: none;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.back-btn:hover { background: rgba(41,151,255,0.2); transform: translateX(-2px); }
+.back-btn svg { width: 14px; height: 14px; }
+.logo { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 2.5rem; }
+.logo .to { color: var(--gray); font-weight: 400; font-size: 0.9rem; margin: 0 0.15em; }
+.logo .dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--accent); margin:0 0.3em; animation: pulse 1.6s ease-in-out infinite; vertical-align: middle; }
+.logo .live { color: var(--accent); }
+@keyframes pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:.4; transform:scale(0.7); } }
+
+h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; color: var(--white); }
+header p { color: var(--gray); margin-top: 1rem; font-size: 1.05rem; }
+
+/* grid */
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1rem; padding: 3rem 2rem 6rem; max-width: 1100px; margin: 0 auto; }
+
+.card {
+  background: var(--card);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 20px;
+  padding: 1.8rem;
+  cursor: pointer;
+  transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+  position: relative;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: cardIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.card:nth-child(1) { animation-delay: 0.05s; }
+.card:nth-child(2) { animation-delay: 0.15s; }
+.card:nth-child(3) { animation-delay: 0.25s; }
+.card:nth-child(4) { animation-delay: 0.35s; }
+.card:nth-child(5) { animation-delay: 0.45s; }
+.card:nth-child(6) { animation-delay: 0.55s; }
+@keyframes cardIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+.card:not(.active):hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.14); }
+.card.disabled { opacity: 0.35; cursor: default; }
+.card.disabled:hover { transform: none; }
+.card.active { border-color: var(--accent); }
+
+.card-icon { width: 44px; height: 44px; margin-bottom: 1.2rem; }
+.card h3 { font-size: 1.15rem; font-weight: 600; margin-bottom: 0.4rem; }
+.card .tag { color: var(--gray); font-size: 0.85rem; }
+.card .soon { position:absolute; top:1rem; right:1rem; font-size:0.68rem; color:var(--gray); letter-spacing:0.05em; text-transform:uppercase; }
+
+/* detail panel */
+.detail {
+  max-width: 1100px; margin: 0 auto;
+  padding: 0 2rem;
+  max-height: 0; overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.6s ease, opacity 0.4s ease, padding 0.5s ease;
+}
+.detail.open { max-height: 3200px; opacity: 1; padding: 0 2rem 6rem; }
+
+.detail-top {
+  margin-bottom: 2.5rem;
+}
+.detail-row {
+  display: grid; grid-template-columns: 320px 1fr; gap: 3rem;
+  margin-bottom: 3.5rem;
+  align-items: start;
+}
+@media (max-width: 800px) {
+  .detail-row { grid-template-columns: 1fr; }
+}
+
+/* stats */
+.stats-title { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gray); margin-bottom: 1.2rem; }
+.stats-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+@media (min-width: 600px) {
+  .stats-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+}
+.stat-card {
+  background: var(--card-2);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px;
+  padding: 1.2rem 1.3rem;
+  opacity: 0; transform: translateY(14px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.stat-card.in { opacity: 1; transform: translateY(0); }
+.stat-card .num { font-size: 1.7rem; font-weight: 700; letter-spacing: -0.01em; }
+@media (max-width: 600px) {
+  .stat-card .num { font-size: 1.35rem; }
+  .stat-card { padding: 1rem 1.1rem; }
+}
+.stat-card .num.accent { color: var(--accent); }
+.stat-card .num.blue { color: var(--blue); }
+.stat-card .lbl { color: var(--gray); font-size: 0.78rem; margin-top: 0.3rem; }
+
+.retention-box {
+  background: var(--card-2);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px;
+  padding: 1.4rem 1.5rem 1.2rem;
+  margin-bottom: 3.5rem;
+}
+.retention-box .rb-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.9rem; flex-wrap: wrap; gap: 0.4rem; }
+.retention-box .rb-head .t { font-weight: 600; font-size: 0.9rem; }
+.retention-box .rb-head .v { color: var(--gray); font-size: 0.78rem; }
+.retention-box svg { width: 100%; height: 90px; display: block; }
+.retention-axis { display: flex; justify-content: space-between; color: var(--gray); font-size: 0.68rem; margin-top: 0.4rem; padding: 0 2px; }
+.retention-path { stroke-dasharray: 600; stroke-dashoffset: 600; transition: stroke-dashoffset 1.6s cubic-bezier(0.22,1,0.36,1); }
+.retention-box.in .retention-path { stroke-dashoffset: 0; }
+.retention-fill { opacity: 0; transition: opacity 1s ease 0.4s; }
+.retention-box.in .retention-fill { opacity: 1; }
+
+/* youtube layout */
+.yt-wrap { display: grid; grid-template-columns: 1fr 320px; gap: 1.6rem; margin-bottom: 2rem; }
+@media (max-width: 800px) { .yt-wrap { grid-template-columns: 1fr; } }
+
+.yt-player {
+  aspect-ratio: 16/9; border-radius: 14px; overflow: hidden;
+  background: linear-gradient(155deg, #1e1508, #000 65%);
+  position: relative; border: 1px solid rgba(255,255,255,0.06);
+}
+.yt-player .play-btn { width: 64px; height: 64px; z-index: 3; }
+.yt-slides { position: absolute; inset: 0; overflow: hidden; }
+.yt-slides img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%; object-fit: cover;
+  opacity: 0; transition: opacity 0.8s ease;
+}
+.yt-slides img.active { opacity: 1; }
+.yt-player .reel-fake { position: absolute; inset: 0; display: flex !important; align-items: center; justify-content: center; z-index: 3; }
+.yt-player .yt-duration { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.75); color: #fff; font-size: 0.72rem; font-weight: 600; padding: 2px 6px; border-radius: 4px; z-index: 3; }
+.yt-player .yt-progress { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: rgba(255,255,255,0.2); z-index: 3; }
+.yt-player .yt-progress::after { content: ""; display: block; height: 100%; width: 22%; background: var(--accent); }
+
+.yt-meta { margin-top: 1rem; }
+.yt-meta h3 { font-size: 1.15rem; font-weight: 600; margin-bottom: 0.4rem; }
+.yt-meta .sub { color: var(--gray); font-size: 0.85rem; }
+
+.yt-engage { display: flex; align-items: center; gap: 0.8rem; margin-top: 1.1rem; flex-wrap: wrap; }
+.yt-pill {
+  display: flex; align-items: center; gap: 0.5rem;
+  background: var(--card-2); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 24px; padding: 0.55rem 1rem; cursor: pointer;
+  font-size: 0.85rem; color: #fff; transition: background 0.2s ease;
+}
+.yt-pill:hover { background: #232326; }
+.yt-pill svg { width: 18px; height: 18px; }
+.yt-pill.liked svg path { fill: #fff; }
+.yt-pill.liked.off svg path { fill: none; }
+
+.yt-side { display: flex; flex-direction: column; gap: 0.8rem; }
+.yt-rec { display: flex; gap: 0.7rem; cursor: default; }
+.yt-rec .thumb {
+  width: 130px; aspect-ratio: 16/9; border-radius: 8px; flex-shrink: 0;
+  background: linear-gradient(155deg, var(--card), #0a0a0b);
+  position: relative; overflow: hidden;
+}
+.yt-rec .thumb::after { content: ""; position: absolute; inset: 0; background: linear-gradient(160deg, rgba(255,69,58,0.18), transparent 60%); }
+.yt-rec .thumb .dur { position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.75); color: #fff; font-size: 0.62rem; padding: 1px 4px; border-radius: 3px; }
+.yt-rec .rinfo { font-size: 0.8rem; }
+.yt-rec .rinfo .rt { font-weight: 600; margin-bottom: 0.2rem; line-height: 1.3; }
+.yt-rec .rinfo .rm { color: var(--gray); font-size: 0.74rem; }
+
+.yt-quote {
+  background: var(--card); border-left: 3px solid var(--accent);
+  padding: 1.2rem 1.4rem; border-radius: 8px;
+  margin-bottom: 2rem; font-size: 0.98rem; line-height: 1.55; color: #d6d6d8;
+}
+.yt-quote strong { color: #fff; }
+
+/* google ads dashboard */
+.gads-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--card-2); border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px; padding: 1rem 1.3rem; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.6rem;
+}
+.gads-bar .camp { display: flex; align-items: center; gap: 0.7rem; font-weight: 600; font-size: 0.95rem; }
+.gads-logo {
+  width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.gads-logo svg { width: 100%; height: 100%; }
+.gads-bar .dotstatus { width: 8px; height: 8px; border-radius: 50%; background: #34c759; box-shadow: 0 0 0 0 rgba(52,199,89,0.5); animation: statusPulse 2s infinite; }
+@keyframes statusPulse { 0% { box-shadow: 0 0 0 0 rgba(52,199,89,0.5); } 70% { box-shadow: 0 0 0 8px rgba(52,199,89,0); } 100% { box-shadow: 0 0 0 0 rgba(52,199,89,0); } }
+.gads-bar .period { color: var(--gray); font-size: 0.82rem; }
+
+.gads-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+
+.gads-chart-box {
+  background: var(--card-2); border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px; padding: 1.4rem 1.5rem 1rem; margin-bottom: 1.5rem;
+}
+.gads-chart-box .t { font-weight: 600; font-size: 0.9rem; margin-bottom: 1rem; }
+.gads-bars { display: flex; align-items: flex-end; gap: 8px; height: 110px; }
+.gads-bars .b { flex: 1; background: linear-gradient(180deg, var(--blue), #1567c4); border-radius: 4px 4px 0 0; height: 0%; transition: height 1.1s cubic-bezier(0.22,1,0.36,1); }
+.gads-chart-box.in .gads-bars .b { }
+.gads-bar-labels { display: flex; gap: 8px; margin-top: 0.5rem; }
+.gads-bar-labels span { flex: 1; text-align: center; font-size: 0.68rem; color: var(--gray); }
+
+.gads-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.gads-table th { text-align: left; color: var(--gray); font-weight: 500; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0 0.8rem 0.6rem 0; }
+.gads-table td { padding: 0.7rem 0.8rem 0.7rem 0; border-top: 1px solid rgba(255,255,255,0.06); }
+.gads-table tr td:first-child { font-weight: 500; }
+.gads-tag { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.72rem; background: rgba(52,199,89,0.15); color: #34c759; }
+
+/* website mockup */
+.browser {
+  border-radius: 16px; overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: var(--card-2); margin-bottom: 1.5rem;
+}
+.browser-bar {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.7rem 1rem; background: #0f0f11;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.browser-bar .dots { display: flex; gap: 6px; }
+.browser-bar .dots span { width: 10px; height: 10px; border-radius: 50%; background: #333; }
+.browser-bar .dots span:nth-child(1) { background: #ff5f57; }
+.browser-bar .dots span:nth-child(2) { background: #febc2e; }
+.browser-bar .dots span:nth-child(3) { background: #28c840; }
+.browser-bar .url {
+  flex: 1; background: #1c1c1e; border-radius: 8px;
+  padding: 0.35rem 0.9rem; font-size: 0.78rem; color: var(--gray);
+  display: flex; align-items: center; gap: 0.4rem;
+}
+.browser-bar .url::before { content: "🔒"; font-size: 0.7rem; }
+.browser-body { padding: 0; background: #fff; color: #111; min-height: 380px; }
+
+.site-nav {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1rem 1.5rem; border-bottom: 1px solid #eee;
+}
+.site-nav .brand { font-weight: 700; font-size: 1rem; }
+.site-nav .links { display: flex; gap: 1.2rem; font-size: 0.8rem; color: #555; }
+.site-nav .cta { background: var(--accent); color: #fff; padding: 0.35rem 0.9rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+
+.site-hero {
+  padding: 2.5rem 1.5rem 2rem; text-align: center;
+  background: linear-gradient(180deg, #fafafa, #fff);
+}
+.site-hero h4 { font-size: 1.4rem; font-weight: 700; color: #111; margin-bottom: 0.6rem; letter-spacing: -0.01em; }
+.site-hero p { color: #666; font-size: 0.88rem; max-width: 400px; margin: 0 auto 1.2rem; line-height: 1.5; }
+.site-hero .hbtn { display: inline-block; background: #111; color: #fff; padding: 0.6rem 1.4rem; border-radius: 24px; font-size: 0.8rem; font-weight: 600; }
+
+.site-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; padding: 1.5rem; }
+.site-cards .sc {
+  background: #f5f5f7; border-radius: 10px; padding: 1rem;
+  font-size: 0.75rem; color: #333;
+}
+.site-cards .sc .n { font-size: 1.4rem; font-weight: 700; color: #111; display: block; margin-bottom: 0.2rem; }
+
+/* website scores */
+.web-scores {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem; margin-bottom: 1.5rem;
+}
+.score-card {
+  background: var(--card-2); border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px; padding: 1.4rem;
+  display: flex; align-items: center; gap: 1rem;
+  opacity: 0; transform: translateY(14px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.score-card.in { opacity: 1; transform: translateY(0); }
+.score-ring { position: relative; width: 60px; height: 60px; flex-shrink: 0; }
+.score-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.score-ring .track { stroke: rgba(255,255,255,0.08); }
+.score-ring .fill { stroke: #34c759; stroke-linecap: round; stroke-dasharray: 176; stroke-dashoffset: 176; transition: stroke-dashoffset 1.4s cubic-bezier(0.22,1,0.36,1); }
+.score-card.in .score-ring .fill { stroke-dashoffset: var(--sd, 20); }
+.score-ring .val { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.95rem; }
+.score-card .sl { font-size: 0.85rem; }
+.score-card .sl .lbl-t { font-weight: 600; }
+.score-card .sl .lbl-s { color: var(--gray); font-size: 0.75rem; margin-top: 0.15rem; }
+
+/* website types */
+.wtypes { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 2.5rem; }
+.wtype {
+  background: var(--card-2); border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px; padding: 1.3rem 1.4rem;
+  transition: border-color 0.25s ease, transform 0.25s ease;
+}
+.wtype:hover { border-color: rgba(255,69,58,0.4); transform: translateY(-3px); }
+.wtype .ico { width: 30px; height: 30px; margin-bottom: 0.9rem; color: var(--accent); }
+.wtype h4 { font-size: 0.98rem; font-weight: 600; margin-bottom: 0.35rem; }
+.wtype p { color: var(--gray); font-size: 0.82rem; line-height: 1.45; }
+
+/* timeline process */
+.timeline {
+  max-width: 1100px; margin: 0 auto 6rem;
+  padding: 0 2rem;
+}
+.timeline-head { margin-bottom: 3rem; }
+.timeline-head .kicker { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); font-weight: 600; margin-bottom: 0.8rem; }
+.timeline-head h2 { font-size: clamp(1.8rem, 4vw, 2.4rem); font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; max-width: 720px; }
+.timeline-head p { color: var(--gray); font-size: 1rem; max-width: 640px; margin-top: 1rem; line-height: 1.5; }
+
+.tl-track {
+  position: relative;
+  padding-left: 60px;
+}
+.tl-track::before {
+  content: ""; position: absolute; left: 22px; top: 20px; bottom: 20px;
+  width: 2px; background: linear-gradient(180deg, var(--accent), rgba(255,69,58,0.15));
+}
+
+.tl-item {
+  position: relative; padding: 0 0 2.2rem 0;
+}
+.tl-item:last-child { padding-bottom: 0; }
+.tl-item::before {
+  content: ""; position: absolute; left: -46px; top: 8px;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--black); border: 2px solid var(--accent);
+  box-shadow: 0 0 0 4px var(--black);
+}
+.tl-item.active::before {
+  background: var(--accent);
+  animation: pulse 1.8s ease-in-out infinite;
+}
+.tl-when {
+  font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--accent); font-weight: 600; margin-bottom: 0.35rem;
+}
+.tl-item h4 { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.35rem; letter-spacing: -0.005em; }
+.tl-item p { color: #b8b8ba; font-size: 0.92rem; line-height: 1.55; }
+
+.tl-phase {
+  margin-top: 3rem;
+  padding-top: 2.5rem;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.tl-phase-lbl {
+  font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--gray); margin-bottom: 1.5rem; font-weight: 600;
+}
+
+@media (max-width: 600px) {
+  .tl-track { padding-left: 44px; }
+  .tl-track::before { left: 14px; }
+  .tl-item::before { left: -37px; }
+}
+
+/* phone video mockup */
+.phone {
+  width: 280px; height: 560px;
+  border-radius: 36px;
+  background: linear-gradient(160deg, #1a1a1c, #0a0a0b);
+  border: 1px solid rgba(255,255,255,0.08);
+  position: relative;
+  padding: 10px;
+  margin: 0 auto;
+}
+.phone::before {
+  content: ""; position: absolute; top: 18px; left: 50%; transform: translateX(-50%);
+  width: 60px; height: 18px; background: #000; border-radius: 10px; z-index: 3;
+}
+.phone-screen {
+  width: 100%; height: 100%; border-radius: 28px; overflow: hidden; position: relative;
+  background: linear-gradient(155deg, #1e0f0f, #000 60%);
+}
+.reel-fake { position: absolute; inset: 0; display: none; }
+
+.reel-slides { position: absolute; inset: 0; overflow: hidden; }
+.reel-slides img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%; object-fit: cover;
+  opacity: 0; transition: opacity 0.8s ease;
+}
+.reel-slides img.active { opacity: 1; }
+.play-btn {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid rgba(255,255,255,0.2);
+  animation: pulseBtn 2.4s ease-in-out infinite;
+}
+.play-btn::after { content: ""; width: 0; height: 0; border-style: solid; border-width: 9px 0 9px 15px; border-color: transparent transparent transparent #fff; margin-left: 4px; }
+@keyframes pulseBtn { 0%,100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.15); } 50% { box-shadow: 0 0 0 14px rgba(255,255,255,0); } }
+
+.reel-waveform { position: absolute; bottom: 90px; left: 20px; right: 20px; display: flex; align-items: flex-end; gap: 3px; height: 26px; }
+.reel-waveform span { flex:1; background: var(--accent); border-radius: 2px; animation: wv 1s ease-in-out infinite; opacity: 0.85; }
+.reel-waveform span:nth-child(odd) { animation-delay: 0.15s; }
+.reel-waveform span:nth-child(3n) { animation-delay: 0.3s; }
+@keyframes wv { 0%,100% { height: 20%; } 50% { height: 100%; } }
+
+.reel-caption { position: absolute; bottom: 40px; left: 20px; right: 72px; font-size: 0.78rem; color: #fff; line-height: 1.4; text-shadow: 0 1px 4px rgba(0,0,0,0.7); z-index: 2; }
+.reel-progress { position:absolute; top:0; left:0; right:0; height:2px; background: rgba(255,255,255,0.15); z-index: 2; }
+.reel-progress::after { content:""; display:block; height:100%; width:38%; background: var(--accent); animation: sweep 3.5s linear infinite; }
+@keyframes sweep { 0% { width: 0%; } 100% { width: 100%; } }
+.reel-duration {
+  position: absolute; top: 12px; right: 12px; z-index: 4;
+  background: rgba(0,0,0,0.5); color: #fff; font-size: 0.68rem; font-weight: 600;
+  padding: 3px 8px; border-radius: 20px; letter-spacing: 0.02em;
+}
+
+.reel-actions {
+  position: absolute; right: 10px; bottom: 40px; z-index: 4;
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+}
+.reel-actions .avatar {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), #7a1a15);
+  border: 2px solid #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem; font-weight: 700; margin-bottom: 4px;
+}
+.reel-actions .act { display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; }
+.reel-actions .act svg { width: 30px; height: 30px; }
+.reel-actions .act .cnt { font-size: 0.68rem; color: #fff; font-weight: 600; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+.reel-actions .act.liked svg path { fill: var(--accent); stroke: var(--accent); }
+.reel-actions .act.saved svg path { fill: #ffd23f; stroke: #ffd23f; }
+.reel-actions .act.liked.off svg path { fill: none; stroke: #fff; }
+.reel-actions .act.saved.off svg path { fill: none; stroke: #fff; }
+.reel-actions .act:active svg { transform: scale(0.85); }
+.reel-actions .act svg { transition: transform 0.2s ease; }
+
+/* explanation column */
+.explain h2 { font-size: 1.6rem; font-weight: 600; margin-bottom: 0.3rem; letter-spacing: -0.01em; }
+.explain > .lead { color: var(--gray); margin-bottom: 2rem; font-size: 0.98rem; line-height: 1.5; }
+
+.block { margin-bottom: 1.8rem; }
+.block .label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin-bottom: 0.6rem; font-weight: 600; }
+.block p, .block li { color: #d6d6d8; font-size: 0.95rem; line-height: 1.6; }
+.block ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+.block li { position: relative; padding-left: 1.1rem; }
+.block li::before { content: ""; position: absolute; left: 0; top: 0.55em; width: 5px; height: 5px; border-radius: 50%; background: var(--blue); }
+
+/* clip reveal for header */
+.reveal-line { overflow: hidden; }
+.reveal-line span { display: inline-block; animation: lineUp 0.7s cubic-bezier(0.22,1,0.36,1) both; }
+@keyframes lineUp { from { transform: translateY(100%); opacity:0; } to { transform: translateY(0); opacity:1; } }
+</style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="back-btn">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Înapoi
+  </a>
+  <div class="logo"><span>Local</span><span class="to">to</span><span class="dot"></span><span class="live">Live</span></div>
+  <h1 class="reveal-line"><span>Ce facem, concret</span></h1>
+  <p>Alege un serviciu și vezi exact cum lucrăm.</p>
+</header>
+
+<div class="grid">
+  <div class="card" data-service="tiktok">
+    <svg class="card-icon" viewBox="0 0 24 24" fill="none"><path d="M16.6 5.82c-.93-.83-1.53-1.98-1.6-3.27h-3.16v13.4c0 1.62-1.32 2.94-2.95 2.94a2.94 2.94 0 0 1-2.94-2.94 2.94 2.94 0 0 1 2.94-2.94c.28 0 .55.04.8.11V9.9a6.12 6.12 0 0 0-.8-.05A6.12 6.12 0 0 0 2.75 16a6.12 6.12 0 0 0 6.14 6.11A6.12 6.12 0 0 0 15.03 16V9.02a8.2 8.2 0 0 0 4.79 1.54V7.4a4.85 4.85 0 0 1-3.22-1.58z" fill="#fff"/></svg>
+    <h3>Social Media</h3>
+    <div class="tag">TikTok, Instagram, Facebook</div>
+  </div>
+
+  <div class="card" data-service="youtube">
+    <svg class="card-icon" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="20" height="14" rx="4" stroke="#fff" stroke-width="1.5"/><path d="M10 9.5l5 2.5-5 2.5v-5z" fill="#fff"/></svg>
+    <h3>YouTube</h3>
+    <div class="tag">Video long-form</div>
+  </div>
+
+  <div class="card" data-service="ads">
+    <svg class="card-icon" viewBox="0 0 24 24" fill="none">
+      <path d="M7.5 3.9L1.5 14.3c-.7 1.2-.3 2.7.9 3.4 1.2.7 2.7.3 3.4-.9l6-10.4c.7-1.2.3-2.7-.9-3.4-1.2-.7-2.7-.3-3.4.9z" fill="#fff"/>
+      <path d="M16.5 3.9c-.7-1.2-2.2-1.6-3.4-.9-1.2.7-1.6 2.2-.9 3.4l6 10.4c.7 1.2 2.2 1.6 3.4.9 1.2-.7 1.6-2.2.9-3.4L16.5 3.9z" fill="#fff"/>
+      <circle cx="4.5" cy="18.5" r="2.5" fill="#fff"/>
+    </svg>
+    <h3>Google Ads</h3>
+    <div class="tag">Campanii căutare</div>
+  </div>
+
+  <div class="card" data-service="website">
+    <svg class="card-icon" viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="18" height="12" rx="2" stroke="#fff" stroke-width="1.5"/><path d="M3 10h18" stroke="#fff" stroke-width="1.5"/></svg>
+    <h3>Creare website</h3>
+    <div class="tag">Prezență online</div>
+  </div>
+</div>
+
+<!-- TikTok detail -->
+<div class="detail" id="detail-tiktok">
+  <div class="detail-top">
+    <h2>Social Media</h2>
+    <p class="lead">Așa arată un videoclip real pentru un business local, creat de la 0, folosit pe TikTok, Instagram și Facebook. Nu este o reclamă, ci conținut care a generat vânzări și atașament față de brand.</p>
+  </div>
+
+  <div class="detail-row">
+    <div class="phone">
+      <div class="phone-screen">
+        <div class="reel-slides">
+          <img src="slides/1.png" class="active" alt="">
+          <img src="slides/2.png" alt="">
+          <img src="slides/3.png" alt="">
+          <img src="slides/4.png" alt="">
+          <img src="slides/5.png" alt="">
+        </div>
+        <div class="reel-progress"></div>
+        <div class="reel-duration">1:15</div>
+
+        <div class="reel-actions">
+          <div class="avatar">L</div>
+          <div class="act liked">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 21s-7.5-4.6-10-9.2C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.4 2.4.8 1.1 1 1.6 2 1.6s1.2-.5 2-1.6C15 5.9 16.4 5 18.4 5 22 5 23.6 8.6 22 11.8 19.5 16.4 12 21 12 21z" stroke="#fff" stroke-width="1.6" fill="none"/></svg>
+            <div class="cnt">2.3K</div>
+          </div>
+          <div class="act">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 4h16v12H8l-4 4V4z" stroke="#fff" stroke-width="1.6" fill="none"/></svg>
+            <div class="cnt">97</div>
+          </div>
+          <div class="act saved">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M6 3h12v18l-6-4-6 4V3z" stroke="#fff" stroke-width="1.6" fill="none"/></svg>
+            <div class="cnt">325</div>
+          </div>
+          <div class="act">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M14 9V6l7 6-7 6v-3c-5 0-8 1.5-10 4.5C4.5 13.5 7.5 9.5 14 9z" stroke="#fff" stroke-width="1.6" fill="none"/></svg>
+            <div class="cnt">186</div>
+          </div>
+        </div>
+
+        <div class="reel-caption">curatDPF.ro · Curățare DPF profesională, fără demontare. Rezultate garantate.</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="stats-title">Rezultate reale dintr-un singur videoclip</div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="num accent" data-count="107100" data-suffix="K" data-div="1000">0</div><div class="lbl">Vizualizări</div></div>
+        <div class="stat-card"><div class="num" data-text="816h:30m">0</div><div class="lbl">Timp total redare</div></div>
+        <div class="stat-card"><div class="num" data-text="27.2s">0</div><div class="lbl">Timp mediu vizionare</div></div>
+        <div class="stat-card"><div class="num blue" data-count="1067" data-suffix="%" data-div="100">0</div><div class="lbl">Video vizionat integral</div></div>
+        <div class="stat-card"><div class="num accent" data-count="355" data-suffix="">0</div><div class="lbl">Urmăritori noi</div></div>
+        <div class="stat-card"><div class="num" data-count="2274" data-suffix="">0</div><div class="lbl">Aprecieri</div></div>
+        <div class="stat-card"><div class="num" data-count="186" data-suffix="">0</div><div class="lbl">Distribuiri</div></div>
+        <div class="stat-card"><div class="num" data-count="325" data-suffix="">0</div><div class="lbl">Salvări</div></div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="explain">
+    <div class="block">
+      <div class="label">Ce filmăm</div>
+      <p>Venim la locația ta cu echipamentul nostru. De la un simplu telefon, la un întreg setup. Respectăm ceea ce am convenit în script: cum se face produsul, cum arată locul, cum lucrezi tu. Nimic fals, nimic artificial.</p>
+    </div>
+
+    <div class="block">
+      <div class="label">Ce edităm</div>
+      <ul>
+        <li>Tăieturi rapide, ritm potrivit pentru TikTok (nu pentru YouTube)</li>
+        <li>Muzică trending, sincronizată pe momentele cheie</li>
+        <li>Text pe ecran pentru primele 2 secunde, acolo se decide dacă rămâne cineva</li>
+        <li>Subtitrări pentru cei care se uită fără sunet</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <div class="label">Strategia</div>
+      <p>Postăm 3-5 clipuri pe săptămână, la orele când publicul tău local e activ. Fiecare clip testează un unghi diferit: proces, rezultat, poveste, ofertă. Urmărim ce funcționează și repetăm formula câștigătoare.</p>
+    </div>
+
+    <div class="block">
+      <div class="label">Ce urmărim</div>
+      <ul>
+        <li>Retention în primele 3 secunde</li>
+        <li>Rata de completare a videoclipului</li>
+        <li>Comentarii și distribuiri, semnalul care duce la viralitate locală</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- YouTube detail -->
+<div class="detail" id="detail-youtube">
+  <div class="detail-top">
+    <h2>YouTube</h2>
+    <p class="lead">YouTube e o platformă diferită de restul rețelelor sociale. Aici nu vânezi scroll rapid, ci construiești încredere, apartenență și relații care țin mai mult. Iată cum a performat un videoclip executat de noi.</p>
+  </div>
+
+  <div class="yt-wrap">
+    <div>
+      <div class="yt-player">
+        <div class="yt-slides">
+          <img src="yt-slides/1.png" class="active" alt="">
+          <img src="yt-slides/2.png" alt="">
+          <img src="yt-slides/3.png" alt="">
+          <img src="yt-slides/4.png" alt="">
+          <img src="yt-slides/5.png" alt="">
+        </div>
+        <div class="yt-progress"></div>
+        <div class="reel-fake"><div class="play-btn"></div></div>
+        <div class="yt-duration">8:42</div>
+      </div>
+      <div class="yt-meta">
+        <h3>Am restaurat un ARO 10 și am mers cu el pe autostrada A7</h3>
+        <div class="sub">28.221 vizualizări · acum 7 luni</div>
+      </div>
+      <div class="yt-engage">
+        <div class="yt-pill liked"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21s-7.5-4.6-10-9.2C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.4 2.4.8 1.1 1 1.6 2 1.6s1.2-.5 2-1.6C15 5.9 16.4 5 18.4 5 22 5 23.6 8.6 22 11.8 19.5 16.4 12 21 12 21z" stroke="#fff" stroke-width="1.6"/></svg> 1,2K</div>
+        <div class="yt-pill"><svg viewBox="0 0 24 24" fill="none"><path d="M4 4h16v12H8l-4 4V4z" stroke="#fff" stroke-width="1.6"/></svg> 87 comentarii</div>
+        <div class="yt-pill"><svg viewBox="0 0 24 24" fill="none"><path d="M14 9V6l7 6-7 6v-3c-5 0-8 1.5-10 4.5C4.5 13.5 7.5 9.5 14 9z" stroke="#fff" stroke-width="1.6"/></svg> distribuie</div>
+      </div>
+    </div>
+
+    <div class="yt-side">
+      <div class="yt-rec">
+        <div class="thumb"><span class="dur">4:12</span></div>
+        <div class="rinfo"><div class="rt">Cum arată o zi normală la service auto</div><div class="rm">890 vizualizări</div></div>
+      </div>
+      <div class="yt-rec">
+        <div class="thumb"><span class="dur">6:05</span></div>
+        <div class="rinfo"><div class="rt">Am întrebat clienții de ce își aduc mașinile la noi</div><div class="rm">1.5K vizualizări</div></div>
+      </div>
+      <div class="yt-rec">
+        <div class="thumb"><span class="dur">3:28</span></div>
+        <div class="rinfo"><div class="rt">Greșeala de care ne-am ferit din prima lună</div><div class="rm">610 vizualizări</div></div>
+      </div>
+      <div class="yt-rec">
+        <div class="thumb"><span class="dur">7:50</span></div>
+        <div class="rinfo"><div class="rt">Un an de la deschiderea service-ului. Ce s-a schimbat</div><div class="rm">2.1K vizualizări</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-title">Ce a generat acest videoclip în 204 zile</div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="num accent" data-text="28,2K">0</div><div class="lbl">Vizionări</div></div>
+    <div class="stat-card"><div class="num" data-text="2,1K ore">0</div><div class="lbl">Durată vizionare</div></div>
+    <div class="stat-card"><div class="num accent" data-count="255" data-suffix="">0</div><div class="lbl">Abonați noi</div></div>
+    <div class="stat-card"><div class="num" data-text="4:23">0</div><div class="lbl">Durată medie</div></div>
+    <div class="stat-card"><div class="num blue" data-count="316" data-suffix="%" data-div="10">0</div><div class="lbl">Procent mediu vizionare</div></div>
+  </div>
+
+  <div class="retention-box">
+    <div class="rb-head">
+      <div class="t">Retenție pe parcursul videoclipului</div>
+      <div class="v">58% urmăreau la 0:30 · peste nivelul obișnuit</div>
+    </div>
+    <svg viewBox="0 0 600 160" preserveAspectRatio="none">
+      <line x1="0" y1="40" x2="600" y2="40" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+      <line x1="0" y1="100" x2="600" y2="100" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+      <path class="retention-fill" d="M0,15 C20,55 40,80 90,90 C180,100 320,102 480,110 C540,115 570,125 600,145 L600,160 L0,160 Z" fill="url(#gradYT)" />
+      <path class="retention-path" d="M0,15 C20,55 40,80 90,90 C180,100 320,102 480,110 C540,115 570,125 600,145" fill="none" stroke="var(--blue)" stroke-width="2.5"/>
+      <defs>
+        <linearGradient id="gradYT" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="var(--blue)" stop-opacity="0.25"/>
+          <stop offset="100%" stop-color="var(--blue)" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+    </svg>
+    <div class="retention-axis">
+      <span>0:00</span><span>3:28</span><span>6:56</span><span>10:24</span><span>13:52</span>
+    </div>
+  </div>
+
+  <div class="yt-quote">
+    Dincolo de cifre, acest videoclip a adus <strong>un client real</strong>: cineva care și-a încredințat mașina clasică acestei unități de reparații, convins că va ajunge la fel de frumoasă.
+  </div>
+
+  <div class="explain">
+    <div class="block">
+      <div class="label">Ce filmăm</div>
+      <p>Videoclipuri mai lungi, cu context: povestea afacerii, oamenii din spate, procesul complet. Aici oamenii vin să te cunoască, nu doar să vadă un produs.</p>
+    </div>
+
+    <div class="block">
+      <div class="label">Ce edităm</div>
+      <ul>
+        <li>Ritm mai calm, potrivit pentru vizionare de 5-10 minute</li>
+        <li>Structură narativă: introducere, poveste, concluzie</li>
+        <li>Thumbnail și titlu gândite pentru căutare, nu doar pentru scroll</li>
+        <li>Capitole și subtitrări pentru accesibilitate</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <div class="label">Strategia</div>
+      <p>Postăm mai rar, dar constant, cu un videoclip solid pe săptămână sau la două săptămâni. Fiecare clip construiește pe cel anterior, ca oamenii să simtă că urmăresc o poveste, nu clipuri izolate.</p>
+    </div>
+
+    <div class="block">
+      <div class="label">Ce urmărim</div>
+      <ul>
+        <li>Timp de vizionare și retenția pe parcursul clipului</li>
+        <li>Abonați noi per videoclip</li>
+        <li>Comentarii, semnalul cel mai puternic de apartenență la comunitate</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Google Ads detail -->
+<div class="detail" id="detail-ads">
+  <div class="detail-top">
+    <h2>Google Ads</h2>
+    <p class="lead">Când cineva caută pe Google exact ce vinzi tu, apari primul. Așa arată un dashboard real de campanie activă pentru un business local.</p>
+  </div>
+
+  <div class="gads-bar">
+    <div class="camp"><span class="dotstatus"></span> Campanie: Servicii locale</div>
+    <div class="period">Ultimele 15 de zile</div>
+  </div>
+
+  <div class="gads-grid">
+    <div class="stat-card"><div class="num" data-text="11,8K">0</div><div class="lbl">Afișări</div></div>
+    <div class="stat-card"><div class="num accent" data-count="310" data-suffix="">0</div><div class="lbl">Clicuri</div></div>
+    <div class="stat-card"><div class="num blue" data-count="263" data-suffix="%" data-div="100">0</div><div class="lbl">CTR</div></div>
+    <div class="stat-card"><div class="num" data-text="1,37 lei">0</div><div class="lbl">Cost / clic</div></div>
+    <div class="stat-card"><div class="num accent" data-text="423 lei">0</div><div class="lbl">Cost total</div></div>
+    <div class="stat-card"><div class="num" data-text="15 zile">0</div><div class="lbl">Perioadă</div></div>
+  </div>
+
+  <div class="gads-chart-box">
+    <div class="t">Clicuri pe săptămână</div>
+    <div class="gads-bars">
+      <div class="b" data-h="38"></div>
+      <div class="b" data-h="52"></div>
+      <div class="b" data-h="61"></div>
+      <div class="b" data-h="70"></div>
+      <div class="b" data-h="58"></div>
+      <div class="b" data-h="84"></div>
+      <div class="b" data-h="100"></div>
+    </div>
+    <div class="gads-bar-labels">
+      <span>S1</span><span>S2</span><span>S3</span><span>S4</span><span>S5</span><span>S6</span><span>S7</span>
+    </div>
+  </div>
+
+  <div class="gads-chart-box">
+    <div class="t">Cuvinte cheie principale</div>
+    <table class="gads-table">
+      <thead><tr><th>Cuvânt cheie</th><th>Clicuri</th><th>CTR</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>„[serviciu] lângă mine"</td><td>214</td><td>6.1%</td><td><span class="gads-tag">activ</span></td></tr>
+        <tr><td>„[serviciu] [oraș]"</td><td>168</td><td>5.4%</td><td><span class="gads-tag">activ</span></td></tr>
+        <tr><td>„preț [serviciu]"</td><td>96</td><td>3.2%</td><td><span class="gads-tag">activ</span></td></tr>
+        <tr><td>„[brand] recenzii"</td><td>54</td><td>8.7%</td><td><span class="gads-tag">activ</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="explain">
+    <div class="block">
+      <div class="label">Ce configurăm</div>
+      <p>Campanii de căutare țintite pe cuvintele exacte pe care le folosesc clienții tăi când caută serviciul tău, în zona ta. Bugetul se duce doar spre oameni care caută activ, nu spre afișări la întâmplare.</p>
+    </div>
+
+    <div class="block">
+      <div class="label">Ce optimizăm</div>
+      <ul>
+        <li>Cuvinte cheie negative, ca să excludem căutările irelevante care îți consumă bugetul</li>
+        <li>Anunțuri testate A/B pentru cel mai bun CTR</li>
+        <li>Pagina de destinație, ca vizitatorul să devină client</li>
+        <li>Buget realocat săptămânal spre ce funcționează</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <div class="label">Ce urmărim</div>
+      <ul>
+        <li>Cost per conversie, adică cât te costă un client real</li>
+        <li>Rata de conversie a paginii de destinație</li>
+        <li>Scorul de calitate al anunțurilor, care scade costul per clic</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Website detail -->
+<div class="detail" id="detail-website">
+  <div class="detail-top">
+    <h2>Creare website</h2>
+    <p class="lead">Un website nu e o carte de vizită digitală. E instrumentul care transformă căutări în clienți, rapid, curat, făcut ca să convingă.</p>
+  </div>
+
+  <div class="browser">
+    <div class="browser-bar">
+      <div class="dots"><span></span><span></span><span></span></div>
+      <div class="url">afacerealocala.ro</div>
+    </div>
+    <div class="browser-body">
+      <div class="site-nav">
+        <div class="brand">Brand<span style="color:var(--accent)">.</span></div>
+        <div class="links"><span>Servicii</span><span>Despre</span><span>Contact</span></div>
+        <div class="cta">Programează</div>
+      </div>
+      <div class="site-hero">
+        <h4>Un titlu clar. Un beneficiu direct.</h4>
+        <p>Text scurt care spune imediat cine ești, ce faci și de ce merită să fii ales. Fără floricele.</p>
+        <span class="hbtn">Vezi oferta →</span>
+      </div>
+      <div class="site-cards">
+        <div class="sc"><span class="n">10+</span>ani de experiență locală</div>
+        <div class="sc"><span class="n">340</span>clienți mulțumiți</div>
+        <div class="sc"><span class="n">4.9★</span>rating Google</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="web-scores">
+    <div class="score-card" style="--sd: 15">
+      <div class="score-ring">
+        <svg viewBox="0 0 64 64"><circle class="track" cx="32" cy="32" r="28" fill="none" stroke-width="6"/><circle class="fill" cx="32" cy="32" r="28" fill="none" stroke-width="6"/></svg>
+        <div class="val">96</div>
+      </div>
+      <div class="sl"><div class="lbl-t">Performanță</div><div class="lbl-s">PageSpeed mobil</div></div>
+    </div>
+    <div class="score-card" style="--sd: 8">
+      <div class="score-ring">
+        <svg viewBox="0 0 64 64"><circle class="track" cx="32" cy="32" r="28" fill="none" stroke-width="6"/><circle class="fill" cx="32" cy="32" r="28" fill="none" stroke-width="6"/></svg>
+        <div class="val">98</div>
+      </div>
+      <div class="sl"><div class="lbl-t">SEO</div><div class="lbl-s">optimizat pentru Google</div></div>
+    </div>
+    <div class="score-card" style="--sd: 20">
+      <div class="score-ring">
+        <svg viewBox="0 0 64 64"><circle class="track" cx="32" cy="32" r="28" fill="none" stroke-width="6"/><circle class="fill" cx="32" cy="32" r="28" fill="none" stroke-width="6"/></svg>
+        <div class="val">94</div>
+      </div>
+      <div class="sl"><div class="lbl-t">Accesibilitate</div><div class="lbl-s">pentru toți utilizatorii</div></div>
+    </div>
+    <div class="score-card" style="--sd: 12">
+      <div class="score-ring">
+        <svg viewBox="0 0 64 64"><circle class="track" cx="32" cy="32" r="28" fill="none" stroke-width="6"/><circle class="fill" cx="32" cy="32" r="28" fill="none" stroke-width="6"/></svg>
+        <div class="val">97</div>
+      </div>
+      <div class="sl"><div class="lbl-t">Best Practices</div><div class="lbl-s">cod curat, securizat</div></div>
+    </div>
+  </div>
+
+  <div class="stats-title">Ce tip de website îți construim</div>
+  <div class="wtypes">
+    <div class="wtype">
+      <svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M3 7h18l-2 12H5L3 7z" stroke="currentColor" stroke-width="1.6"/><path d="M8 7V5a4 4 0 0 1 8 0v2" stroke="currentColor" stroke-width="1.6"/></svg>
+      <h4>Magazine online complete</h4>
+      <p>Coș, plată online, gestionare stoc, facturare. Tot ce îți trebuie ca să vinzi 24/7.</p>
+    </div>
+    <div class="wtype">
+      <svg class="ico" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M3 9h18M8 14h5" stroke="currentColor" stroke-width="1.6"/></svg>
+      <h4>Pagini de prezentare</h4>
+      <p>Pentru un produs, un serviciu sau tot brandul tău. Construite să convertească vizitatori în clienți.</p>
+    </div>
+    <div class="wtype">
+      <svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M4 20V8l8-4 8 4v12" stroke="currentColor" stroke-width="1.6"/><path d="M9 20v-6h6v6" stroke="currentColor" stroke-width="1.6"/></svg>
+      <h4>Software dedicat HoReCa</h4>
+      <p>Meniu digital, rezervări online, comenzi la masă prin QR, integrări cu POS și livrări.</p>
+    </div>
+    <div class="wtype">
+      <svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M12 3l9 5-9 5-9-5 9-5z" stroke="currentColor" stroke-width="1.6"/><path d="M3 13l9 5 9-5" stroke="currentColor" stroke-width="1.6"/></svg>
+      <h4>Ateliere & servicii pe programare</h4>
+      <p>Sistem de programări online, notificări automate clienți, calendar personal. Mai puțin timp pe telefon.</p>
+    </div>
+    <div class="wtype">
+      <svg class="ico" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M12 3v18M3 12h18" stroke="currentColor" stroke-width="1.6"/></svg>
+      <h4>Platforme personalizate</h4>
+      <p>Ai o idee de business online care nu se încadrează nicăieri? Construim exact ce ai nevoie.</p>
+    </div>
+  </div>
+
+  <div class="explain">
+    <div class="block">
+      <div class="label">Ce construim</div>
+      <p>Website rapid, curat, mobile-first. Structură gândită să răspundă la 3 întrebări în primele 5 secunde: cine ești, ce faci, cum te contactez. Fără template-uri generice.</p>
+    </div>
+
+    <div class="block">
+      <div class="label">Ce include</div>
+      <ul>
+        <li>Design personalizat, adaptat brandului tău</li>
+        <li>Pagini optimizate pentru conversie, nu doar informative</li>
+        <li>SEO tehnic pregătit din start, ca Google să te găsească</li>
+        <li>Integrare cu Google Analytics, WhatsApp, hartă, rezervări</li>
+        <li>Formular de contact care ajunge direct la tine</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <div class="label">Ce urmărim</div>
+      <ul>
+        <li>Timp de încărcare sub 2 secunde pe mobil</li>
+        <li>Rata la care vizitatorii devin clienți (formular, telefon, WhatsApp)</li>
+        <li>Poziționarea în căutările locale relevante</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Timeline process -->
+<section class="timeline">
+  <div class="timeline-head">
+    <div class="kicker">Cum lucrăm</div>
+    <h2>Ce se întâmplă, zi cu zi, din momentul în care începem.</h2>
+    <p>Fiecare colaborare are o linie clară. Tu știi ce urmează, când și de ce.</p>
+  </div>
+
+  <div class="tl-track">
+    <div class="tl-item active">
+      <div class="tl-when">Săptămâna 1</div>
+      <h4>Ne cunoaștem și facem auditul</h4>
+      <p>Începem cu un apel scurt: ce vinzi, cui, ce ai încercat, ce vrei să obții. Apoi mă uit peste tot ce ai deja: conturi, campanii, website, materiale, tracking. Pun deoparte ce e folositor, analizăm restul.</p>
+    </div>
+    <div class="tl-item">
+      <div class="tl-when">Săptămâna 2</div>
+      <h4>Strategie</h4>
+      <p>Îți trimit planul: pe cine țintim, cu ce mesaje, prin ce canale, în ce ritm. Discutăm, ajustăm, aprobăm.</p>
+    </div>
+    <div class="tl-item">
+      <div class="tl-when">Săptămâna 3</div>
+      <h4>Filmăm și lansăm</h4>
+      <p>Vin la tine, filmăm primul lot de conținut, montez, publicăm. Concomitent pornim campaniile pe care le-am agreat.</p>
+    </div>
+    <div class="tl-item">
+      <div class="tl-when">Săptămâna 4</div>
+      <h4>Ajustăm pe date reale</h4>
+      <p>Ce funcționează primește buget mai mare. Ce nu funcționează scoatem sau schimbăm. Îți raportez ce văd, ce fac și de ce.</p>
+    </div>
+
+    <div class="tl-phase">
+      <div class="tl-phase-lbl">După cele 30 de zile</div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-when">De aici încolo</div>
+      <h4>Preiei tu, eu rămân aproape</h4>
+      <p>Cele 30 de zile au un scop clar: să știi să te descurci singur. La final îți las traiectoria de urmat, o analiză onestă și tot ce am construit împreună. Nu semnez abonamente, nu te leg de mine. Rămânem prieteni, iar când ai o întrebare sau vrei o părere, sunt la un mesaj distanță.</p>
+    </div>
+  </div>
+</section>
+
+<script>
+document.querySelectorAll('.reel-actions .act.liked, .reel-actions .act.saved').forEach(act => {
+  act.addEventListener('click', () => act.classList.toggle('off'));
+});
+
+// Slideshows cycling (TikTok + YouTube)
+function initSlideshow(selector, interval) {
+  const slides = document.querySelectorAll(selector);
+  if (!slides.length) return;
+  let i = 0;
+  setInterval(() => {
+    slides[i].classList.remove('active');
+    i = (i + 1) % slides.length;
+    slides[i].classList.add('active');
+  }, interval);
+}
+initSlideshow('.reel-slides img', 2000);
+initSlideshow('.yt-slides img', 2000);
+document.querySelectorAll('.yt-pill.liked').forEach(p => {
+  p.addEventListener('click', () => p.classList.toggle('off'));
+});
+
+document.querySelectorAll('.card:not(.disabled)').forEach(card => {
+  card.addEventListener('click', () => {
+    const service = card.dataset.service;
+    const panel = document.getElementById('detail-' + service);
+    const isOpen = panel.classList.contains('open');
+    document.querySelectorAll('.detail.open').forEach(d => d.classList.remove('open'));
+    document.querySelectorAll('.card.active').forEach(c => c.classList.remove('active'));
+    if (!isOpen) {
+      panel.classList.add('open');
+      card.classList.add('active');
+      setTimeout(() => {
+        panel.scrollIntoView({behavior:'smooth', block:'start'});
+        initStatsAnimation(panel);
+      }, 100);
+    }
+  });
+});
+
+function initStatsAnimation(panel) {
+  const cards = panel.querySelectorAll('.stat-card');
+  const retBox = panel.querySelector('.retention-box');
+  const barBoxes = panel.querySelectorAll('.gads-chart-box');
+  const scoreCards = panel.querySelectorAll('.score-card');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in');
+        if (entry.target.classList.contains('stat-card')) animateNumber(entry.target.querySelector('.num'));
+        if (entry.target.classList.contains('gads-chart-box')) {
+          entry.target.querySelectorAll('.gads-bars .b').forEach(b => {
+            requestAnimationFrame(() => { b.style.height = b.dataset.h + '%'; });
+          });
+        }
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.3 });
+  cards.forEach(c => observer.observe(c));
+  if (retBox) observer.observe(retBox);
+  barBoxes.forEach(b => observer.observe(b));
+  scoreCards.forEach(s => observer.observe(s));
+}
+
+function animateNumber(el) {
+  if (el.dataset.text) {
+    el.textContent = el.dataset.text;
+    return;
+  }
+  const target = parseFloat(el.dataset.count);
+  const div = parseFloat(el.dataset.div || 1);
+  const suffix = el.dataset.suffix || '';
+  const finalVal = target / div;
+  const decimals = (finalVal % 1 !== 0) ? 2 : 0;
+  const duration = 1400;
+  const start = performance.now();
+  function frame(now) {
+    const progress = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const current = finalVal * eased;
+    el.textContent = current.toFixed(decimals) + suffix;
+    if (progress < 1) requestAnimationFrame(frame);
+    else el.textContent = finalVal.toFixed(decimals) + suffix;
+  }
+  requestAnimationFrame(frame);
+}
+</script>
+
+</body>
+</html>
