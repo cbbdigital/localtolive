@@ -1,6 +1,6 @@
 # Local to Live
 
-Landing page pentru **Local to Live** (CBB DIGITAL SRL) — program de 30 de zile de social media & marketing digital pentru afaceri locale.
+Landing page pentru **Local to Live** (CBB DIGITAL SRL) — program de 90 de zile de social media & marketing digital pentru afaceri locale.
 
 Pagină single-file: tot HTML/CSS/JS este inline în `index.html`, fără dependențe de build. Singura resursă externă este fontul Space Grotesk de la Google Fonts.
 
