@@ -248,7 +248,11 @@ section { padding: 6rem 0; }
 .section-head .lead b { color: var(--white); font-weight: 600; }
 
 /* ── CAROUSEL ── */
-.track-mask { overflow: hidden; }
+.track-mask {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 44px, #000 calc(100% - 44px), transparent 100%);
+          mask-image: linear-gradient(to right, transparent 0, #000 44px, #000 calc(100% - 44px), transparent 100%);
+}
 .track {
   display: flex; gap: 1.25rem;
   transition: transform 0.5s cubic-bezier(0.4,0,0.2,1);
