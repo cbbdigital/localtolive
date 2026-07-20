@@ -678,9 +678,11 @@ section { padding: 6rem 0; }
   .nav-right a:not(.pill) { display: none; }
 
   /* services carousel */
-  .scard { flex: 0 0 84vw; height: 400px; padding: 1.75rem; }
+  .track-mask { overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-mask-image: none; mask-image: none; }
+  .track-mask::-webkit-scrollbar { display: none; }
+  .track { gap: 1rem; transform: none !important; }
+  .scard { flex: 0 0 84vw; height: 440px; padding: 1.75rem; scroll-snap-align: center; }
   .scard h3 { font-size: 1.4rem; }
-  .track { gap: 1rem; }
   .dots { margin-top: 1.5rem; }
 
   /* editor slab */
@@ -1608,7 +1610,9 @@ footer { border-top: 1px solid rgba(255,255,255,0.08); padding: 3.5rem 0 2.5rem;
 
 const track = document.getElementById('track');
 const dotsWrap = document.getElementById('dots');
+const mask = track.parentElement;
 let index = 0;
+const isTouch = window.matchMedia('(max-width: 740px)').matches;
 
 function cardStep() {
   const card = track.querySelector('.scard');
@@ -1616,77 +1620,95 @@ function cardStep() {
   return card.getBoundingClientRect().width + gap;
 }
 function maxIndex() {
-  const visible = Math.max(1, Math.round(track.parentElement.clientWidth / cardStep()));
+  const visible = Math.max(1, Math.round(mask.clientWidth / cardStep()));
   return Math.max(0, track.children.length - visible);
-}
-function buildDots() {
-  dotsWrap.innerHTML = '';
-  for (let i = 0; i <= maxIndex(); i++) {
-    const d = document.createElement('button');
-    d.className = 'dot' + (i === index ? ' active' : '');
-    d.setAttribute('aria-label', 'Serviciu ' + (i + 1));
-    d.addEventListener('click', () => { index = i; settle(); });
-    dotsWrap.appendChild(d);
-  }
 }
 function syncDots() {
   [...dotsWrap.children].forEach((d, i) => d.classList.toggle('active', i === index));
 }
-function settle() {
-  index = Math.max(0, Math.min(index, maxIndex()));
-  track.classList.remove('dragging');
-  track.style.transform = `translateX(${-index * cardStep()}px)`;
-  syncDots();
-}
 
-/* drag (mouse + touch via pointer events) */
-let startX = 0, baseTx = 0, dragging = false;
-track.addEventListener('pointerdown', (e) => {
-  dragging = true;
-  startX = e.clientX;
-  baseTx = -index * cardStep();
-  track.classList.add('dragging');
-  track.setPointerCapture(e.pointerId);
-});
-track.addEventListener('pointermove', (e) => {
-  if (!dragging) return;
-  const dx = e.clientX - startX;
-  track.style.transform = `translateX(${baseTx + dx}px)`;
-});
-function endDrag(e) {
-  if (!dragging) return;
-  dragging = false;
-  const dx = e.clientX - startX;
-  const moved = Math.round(-dx / cardStep());
-  index += moved;
+if (isTouch) {
+  /* MOBIL: scroll nativ cu snap (fluid, cu inertie) */
+  function buildDotsM() {
+    dotsWrap.innerHTML = '';
+    for (let i = 0; i < track.children.length; i++) {
+      const d = document.createElement('button');
+      d.className = 'dot' + (i === index ? ' active' : '');
+      d.setAttribute('aria-label', 'Serviciu ' + (i + 1));
+      d.addEventListener('click', () => {
+        track.children[i].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      });
+      dotsWrap.appendChild(d);
+    }
+  }
+  buildDotsM();
+  let raf;
+  mask.addEventListener('scroll', () => {
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(() => {
+      const center = mask.scrollLeft + mask.clientWidth / 2;
+      let best = 0, bestD = Infinity;
+      [...track.children].forEach((c, i) => {
+        const cc = c.offsetLeft + c.offsetWidth / 2;
+        const d = Math.abs(cc - center);
+        if (d < bestD) { bestD = d; best = i; }
+      });
+      if (best !== index) { index = best; syncDots(); }
+    });
+  }, { passive: true });
+  window.addEventListener('resize', buildDotsM);
+} else {
+  /* DESKTOP: carusel cu transform + drag + trackpad */
+  function buildDots() {
+    dotsWrap.innerHTML = '';
+    for (let i = 0; i <= maxIndex(); i++) {
+      const d = document.createElement('button');
+      d.className = 'dot' + (i === index ? ' active' : '');
+      d.setAttribute('aria-label', 'Serviciu ' + (i + 1));
+      d.addEventListener('click', () => { index = i; settle(); });
+      dotsWrap.appendChild(d);
+    }
+  }
+  function settle() {
+    index = Math.max(0, Math.min(index, maxIndex()));
+    track.classList.remove('dragging');
+    track.style.transform = `translateX(${-index * cardStep()}px)`;
+    syncDots();
+  }
+  let startX = 0, baseTx = 0, dragging = false;
+  track.addEventListener('pointerdown', (e) => {
+    dragging = true; startX = e.clientX; baseTx = -index * cardStep();
+    track.classList.add('dragging'); track.setPointerCapture(e.pointerId);
+  });
+  track.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    const dx = e.clientX - startX; window.__lastDx = dx;
+    track.style.transform = `translateX(${baseTx + dx}px)`;
+  });
+  function endDrag() {
+    if (!dragging) return; dragging = false;
+    const dx = (window.__lastDx || 0);
+    index += Math.round(-dx / cardStep());
+    settle();
+  }
+  track.addEventListener('pointerup', endDrag);
+  track.addEventListener('pointercancel', endDrag);
+  track.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', (e) => { if (Math.abs(window.__lastDx || 0) > 6) e.preventDefault(); });
+  });
+  window.addEventListener('resize', () => { buildDots(); settle(); });
+  buildDots();
   settle();
-}
-track.addEventListener('pointerup', endDrag);
-track.addEventListener('pointercancel', endDrag);
-
-/* prevent click navigation right after a drag */
-track.querySelectorAll('a').forEach(a => {
-  a.addEventListener('click', (e) => { if (Math.abs(window.__lastDx || 0) > 6) e.preventDefault(); });
-});
-
-window.addEventListener('resize', () => { buildDots(); settle(); });
-buildDots();
-settle();
-
-/* trackpad: swipe orizontal cu doua degete */
-(function(){
-  const mask = track.parentElement;
   let accum = 0, lock = false;
   mask.addEventListener('wheel', (e) => {
     if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
     e.preventDefault();
     if (lock) return;
     accum += e.deltaX;
-    const threshold = 40;
-    if (accum > threshold)      { index++; settle(); accum = 0; lock = true; setTimeout(()=>lock=false, 320); }
-    else if (accum < -threshold){ index--; settle(); accum = 0; lock = true; setTimeout(()=>lock=false, 320); }
+    if (accum > 40)      { index++; settle(); accum = 0; lock = true; setTimeout(()=>lock=false, 320); }
+    else if (accum < -40){ index--; settle(); accum = 0; lock = true; setTimeout(()=>lock=false, 320); }
   }, { passive: false });
-})();
+}
 
 /* ── apply modal ── */
 const applyModal = document.getElementById('applyModal');
