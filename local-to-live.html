@@ -660,9 +660,10 @@ section { padding: 6rem 0; }
   .wrap, .nav-inner { padding-left: 1.25rem; padding-right: 1.25rem; }
   section { padding: 4rem 0; }
   .hero { padding: 0; }
-  .entry-stage { min-height: auto; gap: 3rem; padding: 4rem 1rem 3rem; }
-  .entry-stage .bezel { height: min(68vh, 520px); }
-  .hero-copy { margin-top: 1.5rem; }
+  .entry-stage { min-height: auto; gap: 1.5rem; padding: 1.75rem 1rem 2.5rem; justify-content: flex-start; }
+  .entry-stage .hero-copy { order: 1; margin-top: 0; opacity: 1 !important; transform: none !important; }
+  .entry-stage .device { order: 2; opacity: 1 !important; transform: none !important; }
+  .entry-stage .bezel { height: auto; width: min(84vw, 400px); aspect-ratio: 16 / 9; }
 
   /* tighter headings so they don't overflow */
   .hero h1 { font-size: 2.7rem; }
