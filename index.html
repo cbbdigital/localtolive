@@ -471,12 +471,21 @@ section { padding: 6rem 0; }
   flex-direction: column;
 }
 .ef-visual {
-  height: 230px;
+  height: 250px;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
   margin-bottom: 1.4rem;
 }
+/* toate mock-up-urile umplu aceeasi inaltime */
+.ef-visual > .notes,
+.ef-visual > .script,
+.ef-visual > .timeline,
+.ef-visual > .sales { height: 100%; display: flex; flex-direction: column; }
+.notes .notes-body { flex: 1; }
+.sales .sales-chart { flex: 1; height: auto; }
+.script { justify-content: center; }
+.timeline { justify-content: center; }
 .ef-text h3 { font-size: 1.1rem; font-weight: 600; letter-spacing: -0.01em; position: relative; display: inline-block; }
 .ef-text h3::before {
   content: "";
