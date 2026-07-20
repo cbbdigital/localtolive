@@ -623,17 +623,17 @@ section { padding: 6rem 0; }
 
 /* ── DESKTOP: PINNED SLAB (locks scroll until sweep done) ── */
 @media (min-width: 741px) {
-  .pin-wrap { height: 200vh; }
+  .pin-wrap { height: 200vh; padding: 0; }
   .pin-sticky {
     position: sticky;
     top: 0;
     height: 100vh;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 4rem;
+    padding: 92px 4rem 0;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
   }
   .pin-sticky .editor-slab {
     max-width: none;
