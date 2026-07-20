@@ -94,6 +94,19 @@
   button.submit{margin-top:6px;background:var(--ink);color:#fff;border:none;padding:15px 40px;font-size:13px;letter-spacing:.16em;text-transform:uppercase;font-family:inherit;cursor:pointer;transition:opacity .18s}
   button.submit:hover{opacity:.82}
 
+  /* contact success (fin) */
+  .contact-success{display:none;max-width:520px;padding:6px 0}
+  .contact-success.show{display:block;animation:csFade .55s ease}
+  @keyframes csFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .cs-check{width:56px;height:56px;margin-bottom:24px}
+  .cs-check svg{width:100%;height:100%;overflow:visible}
+  .cs-ring{fill:none;stroke:var(--ink);stroke-width:1.6;stroke-dasharray:170;stroke-dashoffset:170;transform:rotate(-90deg);transform-origin:center;animation:csRing .8s cubic-bezier(.65,0,.35,1) forwards}
+  .cs-tick{fill:none;stroke:var(--ink);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:44;stroke-dashoffset:44;animation:csTick .4s .6s cubic-bezier(.65,0,.35,1) forwards}
+  @keyframes csRing{to{stroke-dashoffset:0}}
+  @keyframes csTick{to{stroke-dashoffset:0}}
+  .contact-success h3{font-size:clamp(24px,2.6vw,32px);font-weight:600;letter-spacing:-.01em;margin-bottom:12px}
+  .contact-success p{color:#4a4a4a;font-weight:300;font-size:16px;max-width:420px;line-height:1.65}
+
   footer{display:none;padding:32px var(--pad);border-top:1px solid var(--line);justify-content:space-between;font-size:12px;color:var(--muted);flex-wrap:wrap;gap:12px}
   body.show-footer footer{display:flex}
 
@@ -205,6 +218,14 @@
         <div class="field"><label>Mesaj <span>(obligatoriu)</span></label><textarea name="mesaj" required></textarea></div>
         <button type="submit" class="submit">Trimite</button>
       </form>
+
+      <div class="contact-success" id="contactSuccess">
+        <div class="cs-check">
+          <svg viewBox="0 0 60 60" aria-hidden="true"><circle class="cs-ring" cx="30" cy="30" r="27"/><path class="cs-tick" d="M18 31l8 8 16-18"/></svg>
+        </div>
+        <h3>Mulțumesc.</h3>
+        <p>Am primit mesajul tău. Revin cât de curând, de obicei în aceeași zi.</p>
+      </div>
     </section>
   </div>
 
@@ -220,7 +241,13 @@
     e.preventDefault();
     const data = new URLSearchParams(new FormData(form)).toString();
     fetch('/', { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:data })
-      .then(() => { alert('Mulțumim! Mesajul a fost trimis.'); form.reset(); })
+      .then(() => {
+        form.style.display = 'none';
+        const lead = form.closest('.block').querySelector('.lead');
+        if (lead) lead.style.display = 'none';
+        const ok = document.getElementById('contactSuccess');
+        if (ok) ok.classList.add('show');
+      })
       .catch(() => alert('A apărut o eroare. Te rog încearcă din nou.'));
     return false;
   }
