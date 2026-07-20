@@ -996,16 +996,35 @@ footer { border-top: 1px solid rgba(255,255,255,0.08); padding: 3.5rem 0 2.5rem;
 .form-error { color: var(--accent); font-size: 0.82rem; min-height: 1rem; margin: 0.25rem 0 0.5rem; }
 .modal-submit { width: 100%; text-align: center; margin-top: 0.25rem; }
 .modal-fine { text-align: center; font-size: 0.75rem; color: var(--gray); margin-top: 0.8rem; }
-.modal-success { display: none; text-align: center; padding: 1.5rem 0.5rem; }
+.modal-success { display: none; text-align: center; padding: 1.25rem 0.5rem; position: relative; overflow: hidden; }
 .modal-success.show { display: block; }
-.success-check {
-  width: 64px; height: 64px; border-radius: 50%;
-  background: rgba(52,199,89,0.15); color: #34c759;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 2rem; margin: 0 auto 1.25rem;
-}
-.modal-success h3 { font-size: 1.5rem; }
-.modal-success p { color: var(--gray); font-size: 0.95rem; line-height: 1.5; margin: 0.75rem auto 1.75rem; max-width: 360px; }
+.success-badge { width: 84px; height: 84px; margin: 0.4rem auto 1.3rem; position: relative; }
+.success-badge svg { width: 100%; height: 100%; overflow: visible; position: relative; z-index: 1; }
+.success-badge::before { content: ""; position: absolute; inset: -12px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(41,151,255,0.4), transparent 70%); filter: blur(8px); animation: sgGlow 2.4s ease-in-out infinite; }
+@keyframes sgGlow { 0%,100% { opacity: .5; transform: scale(0.95); } 50% { opacity: 1; transform: scale(1.06); } }
+.sc-ring { fill: none; stroke: #2997ff; stroke-width: 3; stroke-linecap: round; stroke-dasharray: 151; stroke-dashoffset: 151; transform: rotate(-90deg); transform-origin: center; }
+.sc-check { fill: none; stroke: #fff; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 40; stroke-dashoffset: 40; }
+.modal-success.show .sc-ring { animation: scRing .7s cubic-bezier(.65,0,.35,1) forwards; }
+.modal-success.show .sc-check { animation: scCheck .4s .55s cubic-bezier(.65,0,.35,1) forwards; }
+@keyframes scRing { to { stroke-dashoffset: 0; } }
+@keyframes scCheck { to { stroke-dashoffset: 0; } }
+.success-eyebrow { display: inline-block; font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600; color: #2997ff; margin-bottom: 0.5rem; }
+.modal-success h3 { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.01em; line-height: 1.15;
+  background: linear-gradient(180deg, #fff, #a9ccff); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.modal-success > p { color: var(--gray); font-size: 0.95rem; line-height: 1.55; margin: 0.7rem auto 1.5rem; max-width: 380px; }
+.modal-success > p strong { color: var(--white); }
+.success-steps { display: flex; flex-direction: column; gap: 0.55rem; max-width: 340px; margin: 0 auto 1.75rem; text-align: left; }
+.success-steps .ss { display: flex; align-items: center; gap: 0.75rem; background: var(--card-2); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 0.7rem 0.9rem; font-size: 0.9rem; color: var(--white); opacity: 0; transform: translateY(8px); }
+.modal-success.show .ss { animation: ssIn .5s ease forwards; }
+.success-steps .ss:nth-child(1) { animation-delay: .9s; }
+.success-steps .ss:nth-child(2) { animation-delay: 1.05s; }
+.success-steps .ss:nth-child(3) { animation-delay: 1.2s; }
+@keyframes ssIn { to { opacity: 1; transform: translateY(0); } }
+.ss-n { width: 24px; height: 24px; flex: 0 0 auto; border-radius: 50%; background: rgba(41,151,255,0.15); color: #2997ff; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 700; }
+.confetti { position: absolute; top: 16px; width: 8px; height: 12px; border-radius: 2px; opacity: 0; pointer-events: none; animation: confFall 1.3s ease-out forwards; }
+@keyframes confFall { 0% { opacity: 1; transform: translate(0,0) rotate(0); } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); } }
+@media (prefers-reduced-motion: reduce) { .confetti { display: none; } }
 
 @media (max-width: 560px) {
   .field-row { flex-direction: column; gap: 0; }
@@ -1519,9 +1538,17 @@ footer { border-top: 1px solid rgba(255,255,255,0.08); padding: 3.5rem 0 2.5rem;
     </div>
 
     <div class="modal-success" id="applySuccess">
-      <div class="success-check">✓</div>
-      <h3>Aplicație trimisă!</h3>
-      <p>Mulțumim. Revenim în maximum 24h și îți spunem dacă mai e un loc disponibil pentru tine.</p>
+      <div class="success-badge">
+        <svg viewBox="0 0 52 52" aria-hidden="true"><circle class="sc-ring" cx="26" cy="26" r="24"/><path class="sc-check" d="M15 27l7 7 15-16"/></svg>
+      </div>
+      <div class="success-eyebrow">Aplicație primită</div>
+      <h3>Mulțumim! Ești pe listă.</h3>
+      <p>Am primit aplicația ta. O analizăm cu atenție și revenim în <strong>maximum 24h</strong> cu un răspuns și cu următorii pași.</p>
+      <div class="success-steps">
+        <div class="ss"><span class="ss-n">1</span><span>Îți verificăm afacerea și potrivirea</span></div>
+        <div class="ss"><span class="ss-n">2</span><span>Te contactăm în maximum 24h</span></div>
+        <div class="ss"><span class="ss-n">3</span><span>Începem programul de 90 de zile</span></div>
+      </div>
       <button type="button" class="btn-secondary" id="closeSuccess">Închide</button>
     </div>
   </div>
@@ -1682,6 +1709,24 @@ if (closeSuccess) closeSuccess.addEventListener('click', closeModal);
 applyModal.addEventListener('click', (e) => { if (e.target === applyModal) closeModal(); });
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && applyModal.classList.contains('open')) closeModal(); });
 
+function fireConfetti() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const box = document.getElementById('applySuccess');
+  if (!box) return;
+  const colors = ['#2997ff', '#ff453a', '#ffffff', '#34c759'];
+  for (let i = 0; i < 28; i++) {
+    const c = document.createElement('span');
+    c.className = 'confetti';
+    c.style.left = (50 + (Math.random() * 60 - 30)) + '%';
+    c.style.background = colors[i % colors.length];
+    c.style.setProperty('--dx', (Math.random() * 240 - 120) + 'px');
+    c.style.setProperty('--dy', (150 + Math.random() * 170) + 'px');
+    c.style.setProperty('--rot', (Math.random() * 720 - 360) + 'deg');
+    c.style.animationDelay = (Math.random() * 0.15) + 's';
+    box.appendChild(c);
+    setTimeout(() => c.remove(), 1700);
+  }
+}
 if (submitApply) {
   submitApply.addEventListener('click', () => {
     const val = id => (document.getElementById(id).value || '').trim();
@@ -1699,7 +1744,7 @@ if (submitApply) {
     const data = new URLSearchParams(new FormData(form)).toString();
     submitApply.disabled = true;
     fetch('/', { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:data })
-      .then(() => { applyBody.style.display = 'none'; applySuccess.classList.add('show'); })
+      .then(() => { applyBody.style.display = 'none'; applySuccess.classList.add('show'); fireConfetti(); })
       .catch(() => { err.textContent = 'A apărut o eroare. Te rog încearcă din nou.'; submitApply.disabled = false; });
   });
 }
