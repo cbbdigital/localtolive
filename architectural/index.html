@@ -23,11 +23,11 @@
   .brand{display:flex;align-items:center;gap:12px;margin-bottom:56px;cursor:pointer}
   .brand .name{font-weight:600;letter-spacing:.18em;font-size:15px;line-height:1.2}
   .brand .name small{display:block;font-weight:400;letter-spacing:.13em;font-size:9px;color:var(--muted);margin-top:3px}
-  nav.main{display:flex;flex-direction:column;gap:2px}
-  nav.main a{font-size:15px;color:var(--muted);padding:7px 0;transition:color .18s;cursor:pointer}
+  nav.main{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+  nav.main a{font-size:15px;color:var(--muted);padding:7px 0;transition:color .18s;cursor:pointer;text-align:right}
   nav.main a:hover,nav.main a.active{color:var(--ink)}
   nav.main .spacer{height:24px}
-  .social{margin-top:auto;display:flex;gap:16px;padding-top:32px}
+  .social{margin-top:32px;display:flex;gap:16px;align-self:flex-end}
   .social a{color:var(--muted);transition:color .18s}
   .social a:hover{color:var(--ink)}
   .social svg{width:19px;height:19px}
@@ -38,24 +38,24 @@
   .view{display:none}
   .view.active{display:block}
 
-  /* Slideshow */
-  .stage{height:100vh;padding:var(--gutter) var(--gutter) 0 0;display:flex;flex-direction:column}
-  .proj-head{display:flex;justify-content:space-between;align-items:baseline;padding-bottom:14px;flex:0 0 auto}
+  /* Slideshow — poza full-bleed, controale jos-stânga */
+  .stage{position:relative;height:100vh;padding:0}
+  .proj-head{position:fixed;left:var(--pad);bottom:104px;z-index:60;display:flex;flex-direction:column;align-items:flex-start;gap:6px}
   .proj-head .back{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);cursor:pointer;transition:color .18s}
   .proj-head .back:hover{color:var(--ink)}
-  .proj-head .ptitle{font-size:14px;font-weight:500}
-  .proj-head .ptitle small{color:var(--muted);font-weight:400;margin-left:10px}
-  .viewer{flex:1;position:relative;min-height:0;background:var(--bg);overflow:hidden}
+  .proj-head .ptitle{font-size:13px;font-weight:500;display:flex;flex-direction:column}
+  .proj-head .ptitle small{color:var(--muted);font-weight:400;margin-top:2px}
+  .viewer{position:absolute;inset:0;background:var(--bg);overflow:hidden}
   .viewer .slide{position:absolute;inset:0;opacity:0;transition:opacity .5s ease;width:100%;height:100%;object-fit:contain;object-position:center}
   .viewer .slide.on{opacity:1}
-  .controls{display:flex;flex-direction:column;gap:10px;padding:18px 0 22px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .controls{position:fixed;left:var(--pad);bottom:40px;z-index:60;display:flex;flex-direction:column;gap:10px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
   .controls .nav-line span{cursor:pointer;transition:color .18s}
   .controls .nav-line span:hover{color:var(--ink)}
   .controls .nav-line .sep{margin:0 8px;cursor:default}
   .controls .thumbs-toggle{cursor:pointer;transition:color .18s;width:max-content}
   .controls .thumbs-toggle:hover{color:var(--ink)}
   .controls .counter{color:#c2c2c2;letter-spacing:.1em}
-  .thumbs{display:none;grid-template-columns:repeat(6,1fr);gap:12px;padding:0 var(--gutter) var(--gutter) 0}
+  .thumbs{display:none;position:absolute;inset:0;background:var(--bg);overflow:auto;grid-template-columns:repeat(4,1fr);gap:12px;padding:24px;align-content:start;z-index:5}
   .thumbs.open{display:grid}
   .thumbs .t{aspect-ratio:3/2;background:var(--slot) center/cover;cursor:pointer;outline:0 solid var(--ink);transition:outline-width .12s}
   .thumbs .t.active{outline-width:2px}
@@ -117,16 +117,16 @@
     .brand{order:2;margin:0 0 0 auto}
     .brand .name{font-size:12.5px;letter-spacing:.14em;text-align:right}
     .brand .name small{font-size:8px;letter-spacing:.1em;margin-top:2px}
-    nav.main{order:3;flex-basis:100%;flex-direction:row;flex-wrap:wrap;gap:2px 16px}
-    nav.main a{padding:4px 0;font-size:14px}
+    nav.main{order:3;flex-basis:100%;flex-direction:row;flex-wrap:wrap;align-items:center;gap:2px 16px}
+    nav.main a{padding:4px 0;font-size:14px;text-align:left}
     nav.main .spacer{display:none}
     main{margin-left:0}
     section.block{padding-top:20px}
     .stage{height:auto;padding:14px 14px 0;display:block}
-    .viewer{background:transparent;overflow:visible;height:auto;display:flex;flex-direction:column;gap:14px}
+    .viewer{position:static;background:transparent;overflow:visible;height:auto;display:flex;flex-direction:column;gap:14px}
     .viewer .slide{position:static;opacity:1;transition:none;width:100%;height:auto;object-fit:contain}
     .controls,.thumbs{display:none !important}
-    .proj-head{padding-top:8px}
+    .proj-head{position:static;left:auto;bottom:auto;padding-top:8px}
     .grid,.svc-list{grid-template-columns:repeat(2,1fr)}
     .about{grid-template-columns:1fr}
   }
