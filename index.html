@@ -1461,38 +1461,41 @@ footer { border-top: 1px solid rgba(255,255,255,0.08); padding: 3.5rem 0 2.5rem;
       <h3 id="applyTitle">Aplică pentru un loc.</h3>
       <p class="modal-sub">Lucrăm cu un număr redus de companii, așa că locurile sunt limitate. Completează și revenim în 24h cu un răspuns. Cu cât ne spui mai multe, cu atât evaluăm mai bine potrivirea.</p>
 
+      <form name="aplicatie" method="POST" action="/" data-netlify="true" netlify-honeypot="bot-field" id="applyForm">
+      <input type="hidden" name="form-name" value="aplicatie">
+      <p hidden><label>Nu completa: <input name="bot-field"></label></p>
       <div class="field">
         <label>Nume și prenume <span>*</span></label>
-        <input type="text" id="f_name" placeholder="Ex: Ciprian Popescu">
+        <input type="text" id="f_name" name="nume" placeholder="Ex: Ciprian Popescu">
       </div>
       <div class="field-row">
         <div class="field">
           <label>Numele afacerii <span>*</span></label>
-          <input type="text" id="f_biz" placeholder="Brandul tău">
+          <input type="text" id="f_biz" name="afacere" placeholder="Brandul tău">
         </div>
         <div class="field">
           <label>Domeniu de activitate <span>*</span></label>
-          <input type="text" id="f_domain" placeholder="Ex: produse handmade">
+          <input type="text" id="f_domain" name="domeniu" placeholder="Ex: produse handmade">
         </div>
       </div>
       <div class="field">
         <label>Website sau pagină de social <span>*</span></label>
-        <input type="text" id="f_link" placeholder="instagram.com/… sau site-ul tău">
+        <input type="text" id="f_link" name="link" placeholder="instagram.com/… sau site-ul tău">
       </div>
       <div class="field-row">
         <div class="field">
           <label>Ce vinzi / oferi <span>*</span></label>
-          <input type="text" id="f_offer" placeholder="Pe scurt, ce vinzi clienților">
+          <input type="text" id="f_offer" name="oferta" placeholder="Pe scurt, ce vinzi clienților">
         </div>
         <div class="field">
           <label>Locație (oraș / județ) <span>*</span></label>
-          <input type="text" id="f_location" placeholder="Ex: București">
+          <input type="text" id="f_location" name="locatie" placeholder="Ex: București">
         </div>
       </div>
       <div class="field-row">
         <div class="field">
           <label>Buget lunar pentru online</label>
-          <select id="f_budget">
+          <select id="f_budget" name="buget">
             <option value="1.000–2.000 RON">1.000–2.000 RON</option>
             <option value="2.000–5.000 RON">2.000–5.000 RON</option>
             <option value="5.000–10.000 RON">5.000–10.000 RON</option>
@@ -1501,16 +1504,17 @@ footer { border-top: 1px solid rgba(255,255,255,0.08); padding: 3.5rem 0 2.5rem;
         </div>
         <div class="field">
           <label>Telefon sau email <span>*</span></label>
-          <input type="text" id="f_contact" placeholder="Cum te contactăm">
+          <input type="text" id="f_contact" name="contact" placeholder="Cum te contactăm">
         </div>
       </div>
       <div class="field">
         <label>De ce vrei să lucrezi cu noi?</label>
-        <textarea id="f_msg" rows="3" placeholder="Obiectivul tău, ce ai încercat până acum…"></textarea>
+        <textarea id="f_msg" name="mesaj" rows="3" placeholder="Obiectivul tău, ce ai încercat până acum…"></textarea>
       </div>
 
       <p class="form-error" id="formError"></p>
       <button type="button" class="btn-primary modal-submit" id="submitApply">Trimite aplicația</button>
+      </form>
       <p class="modal-fine">Răspuns în 24h · Fără obligații</p>
     </div>
 
@@ -1690,23 +1694,13 @@ if (submitApply) {
       return;
     }
     err.textContent = '';
-    const subject = encodeURIComponent('Aplicație Local to Live — ' + biz);
-    const body = encodeURIComponent(
-      'Nume: ' + name +
-      '\nAfacere: ' + biz +
-      '\nDomeniu: ' + domain +
-      '\nLocație: ' + location +
-      '\nLink: ' + link +
-      '\nCe vinde: ' + offer +
-      '\nBuget reclame: ' + budget +
-      '\nContact: ' + contact +
-      '\n\nMesaj:\n' + (msg || '—')
-    );
-    /* open the user's mail client with everything pre-filled */
-    window.location.href = 'mailto:hello@localtolive.ro?subject=' + subject + '&body=' + body;
-    /* show confirmation */
-    applyBody.style.display = 'none';
-    applySuccess.classList.add('show');
+    /* trimite catre Netlify Forms */
+    const form = document.getElementById('applyForm');
+    const data = new URLSearchParams(new FormData(form)).toString();
+    submitApply.disabled = true;
+    fetch('/', { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:data })
+      .then(() => { applyBody.style.display = 'none'; applySuccess.classList.add('show'); })
+      .catch(() => { err.textContent = 'A apărut o eroare. Te rog încearcă din nou.'; submitApply.disabled = false; });
   });
 }
 
