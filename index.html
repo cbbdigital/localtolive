@@ -253,16 +253,16 @@ section { padding: 6rem 0; }
 
 /* ── CAROUSEL ── */
 .track-mask {
-  overflow: hidden;
+  overflow-x: auto; overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
 }
+.track-mask::-webkit-scrollbar { display: none; }
 .track {
   display: flex; gap: 1.25rem;
-  transition: transform 0.5s cubic-bezier(0.4,0,0.2,1);
   cursor: grab;
-  touch-action: pan-y;
 }
-.track.dragging { cursor: grabbing; transition: none; }
-.track.dragging * { pointer-events: none; }
 .dots {
   display: flex;
   justify-content: center;
@@ -286,6 +286,7 @@ section { padding: 6rem 0; }
   flex: 0 0 calc((min(100vw, 1200px) - 168px) / 3); height: 460px; border-radius: 24px; padding: 2.25rem;
   display: flex; flex-direction: column; justify-content: flex-end;
   position: relative; overflow: hidden; background: var(--card);
+  scroll-snap-align: start;
 }
 .scard .gradient { position: absolute; inset: 0; z-index: 0; }
 .scard .content { position: relative; z-index: 1; }
@@ -1623,7 +1624,6 @@ const track = document.getElementById('track');
 const dotsWrap = document.getElementById('dots');
 const mask = track.parentElement;
 let index = 0;
-const isTouch = window.matchMedia('(max-width: 740px)').matches;
 
 function cardStep() {
   const card = track.querySelector('.scard');
@@ -1634,92 +1634,46 @@ function maxIndex() {
   const visible = Math.max(1, Math.round(mask.clientWidth / cardStep()));
   return Math.max(0, track.children.length - visible);
 }
+function buildDots() {
+  dotsWrap.innerHTML = '';
+  for (let i = 0; i <= maxIndex(); i++) {
+    const d = document.createElement('button');
+    d.className = 'dot' + (i === index ? ' active' : '');
+    d.setAttribute('aria-label', 'Serviciu ' + (i + 1));
+    d.addEventListener('click', () => { mask.scrollTo({ left: i * cardStep(), behavior: 'smooth' }); });
+    dotsWrap.appendChild(d);
+  }
+}
 function syncDots() {
+  index = Math.min(Math.round(mask.scrollLeft / cardStep()), maxIndex());
   [...dotsWrap.children].forEach((d, i) => d.classList.toggle('active', i === index));
 }
+buildDots();
+let raf;
+mask.addEventListener('scroll', () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(syncDots); }, { passive: true });
+window.addEventListener('resize', () => { buildDots(); });
 
-if (isTouch) {
-  /* MOBIL: scroll nativ cu snap (fluid, cu inertie) */
-  function buildDotsM() {
-    dotsWrap.innerHTML = '';
-    for (let i = 0; i < track.children.length; i++) {
-      const d = document.createElement('button');
-      d.className = 'dot' + (i === index ? ' active' : '');
-      d.setAttribute('aria-label', 'Serviciu ' + (i + 1));
-      d.addEventListener('click', () => {
-        track.children[i].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-      });
-      dotsWrap.appendChild(d);
-    }
-  }
-  buildDotsM();
-  let raf;
-  mask.addEventListener('scroll', () => {
-    cancelAnimationFrame(raf);
-    raf = requestAnimationFrame(() => {
-      const center = mask.scrollLeft + mask.clientWidth / 2;
-      let best = 0, bestD = Infinity;
-      [...track.children].forEach((c, i) => {
-        const cc = c.offsetLeft + c.offsetWidth / 2;
-        const d = Math.abs(cc - center);
-        if (d < bestD) { bestD = d; best = i; }
-      });
-      if (best !== index) { index = best; syncDots(); }
-    });
-  }, { passive: true });
-  window.addEventListener('resize', buildDotsM);
-} else {
-  /* DESKTOP: carusel cu transform + drag + trackpad */
-  function buildDots() {
-    dotsWrap.innerHTML = '';
-    for (let i = 0; i <= maxIndex(); i++) {
-      const d = document.createElement('button');
-      d.className = 'dot' + (i === index ? ' active' : '');
-      d.setAttribute('aria-label', 'Serviciu ' + (i + 1));
-      d.addEventListener('click', () => { index = i; settle(); });
-      dotsWrap.appendChild(d);
-    }
-  }
-  function settle() {
-    index = Math.max(0, Math.min(index, maxIndex()));
-    track.classList.remove('dragging');
-    track.style.transform = `translateX(${-index * cardStep()}px)`;
-    syncDots();
-  }
-  let startX = 0, baseTx = 0, dragging = false;
-  track.addEventListener('pointerdown', (e) => {
-    dragging = true; startX = e.clientX; baseTx = -index * cardStep();
-    track.classList.add('dragging'); track.setPointerCapture(e.pointerId);
-  });
-  track.addEventListener('pointermove', (e) => {
-    if (!dragging) return;
-    const dx = e.clientX - startX; window.__lastDx = dx;
-    track.style.transform = `translateX(${baseTx + dx}px)`;
-  });
-  function endDrag() {
-    if (!dragging) return; dragging = false;
-    const dx = (window.__lastDx || 0);
-    index += Math.round(-dx / cardStep());
-    settle();
-  }
-  track.addEventListener('pointerup', endDrag);
-  track.addEventListener('pointercancel', endDrag);
-  track.querySelectorAll('a').forEach(a => {
-    a.addEventListener('click', (e) => { if (Math.abs(window.__lastDx || 0) > 6) e.preventDefault(); });
-  });
-  window.addEventListener('resize', () => { buildDots(); settle(); });
-  buildDots();
-  settle();
-  let accum = 0, lock = false;
-  mask.addEventListener('wheel', (e) => {
-    if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
-    e.preventDefault();
-    if (lock) return;
-    accum += e.deltaX;
-    if (accum > 40)      { index++; settle(); accum = 0; lock = true; setTimeout(()=>lock=false, 320); }
-    else if (accum < -40){ index--; settle(); accum = 0; lock = true; setTimeout(()=>lock=false, 320); }
-  }, { passive: false });
+/* drag cu mouse-ul (trackpad + touch folosesc scroll nativ) */
+let down = false, startX = 0, startL = 0, moved = 0;
+mask.addEventListener('pointerdown', (e) => {
+  if (e.pointerType !== 'mouse') return;
+  down = true; moved = 0; startX = e.clientX; startL = mask.scrollLeft;
+  mask.setPointerCapture(e.pointerId); track.style.cursor = 'grabbing';
+});
+mask.addEventListener('pointermove', (e) => {
+  if (!down) return;
+  const dx = e.clientX - startX; moved = Math.max(moved, Math.abs(dx));
+  mask.scrollLeft = startL - dx;
+});
+function endDrag() {
+  if (!down) return; down = false; track.style.cursor = '';
+  mask.scrollTo({ left: Math.round(mask.scrollLeft / cardStep()) * cardStep(), behavior: 'smooth' });
 }
+mask.addEventListener('pointerup', endDrag);
+mask.addEventListener('pointercancel', endDrag);
+track.querySelectorAll('a').forEach(a => {
+  a.addEventListener('click', (e) => { if (moved > 6) e.preventDefault(); });
+});
 
 /* ── apply modal ── */
 const applyModal = document.getElementById('applyModal');
