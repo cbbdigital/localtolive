@@ -112,12 +112,14 @@
 
   /* Mobile */
   @media(max-width:900px){
-    .sidebar{position:sticky;flex-direction:row;align-items:center;width:100%;height:auto;padding:16px var(--pad);border-bottom:1px solid var(--line);gap:18px;flex-wrap:wrap}
-    .brand{margin-bottom:0;margin-right:auto}
-    nav.main{flex-direction:row;flex-wrap:wrap;gap:2px 16px}
+    .sidebar{position:sticky;flex-direction:row;align-items:center;width:100%;height:auto;padding:16px var(--pad);border-bottom:1px solid var(--line);gap:12px 18px;flex-wrap:wrap}
+    .social{order:1;margin:0;padding:0}
+    .brand{order:2;margin:0 0 0 auto}
+    .brand .name{font-size:12.5px;letter-spacing:.14em;text-align:right}
+    .brand .name small{font-size:8px;letter-spacing:.1em;margin-top:2px}
+    nav.main{order:3;flex-basis:100%;flex-direction:row;flex-wrap:wrap;gap:2px 16px}
     nav.main a{padding:4px 0;font-size:14px}
     nav.main .spacer{display:none}
-    .social{margin:0;padding:0}
     main{margin-left:0}
     .stage{height:auto;padding:14px 14px 0;display:block}
     .viewer{background:transparent;overflow:visible;height:auto;display:flex;flex-direction:column;gap:14px}
@@ -145,7 +147,7 @@
     <a data-view="contact">Contact</a>
   </nav>
   <div class="social">
-    <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
+    <a href="https://www.instagram.com/cb.architectural" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
   </div>
 </aside>
 
