@@ -193,14 +193,16 @@
     <section class="block">
       <h2 class="h-title">Contact</h2>
       <p class="lead" style="margin-bottom:36px">Pentru orice solicitare de preț sau rezervare, completează formularul de mai jos. Include cât mai multe informații relevante: locația proiectului, numărul de imagini, modul de utilizare și termenul de finalizare.</p>
-      <form onsubmit="event.preventDefault();this.reset();alert('Mulțumim! Mesajul a fost trimis.');">
+      <form name="contact-architectural" method="POST" action="/" data-netlify="true" netlify-honeypot="bot-field" onsubmit="return submitContact(this,event)">
+        <input type="hidden" name="form-name" value="contact-architectural">
+        <p hidden><label>Nu completa: <input name="bot-field"></label></p>
         <div class="row">
-          <div class="field"><label>Prenume <span>(obligatoriu)</span></label><input type="text" required></div>
-          <div class="field"><label>Nume <span>(obligatoriu)</span></label><input type="text" required></div>
+          <div class="field"><label>Prenume <span>(obligatoriu)</span></label><input type="text" name="prenume" required></div>
+          <div class="field"><label>Nume <span>(obligatoriu)</span></label><input type="text" name="nume" required></div>
         </div>
-        <div class="field"><label>Adresă de email <span>(obligatoriu)</span></label><input type="email" required></div>
-        <div class="field"><label>Subiect <span>(obligatoriu)</span></label><input type="text" required></div>
-        <div class="field"><label>Mesaj <span>(obligatoriu)</span></label><textarea required></textarea></div>
+        <div class="field"><label>Adresă de email <span>(obligatoriu)</span></label><input type="email" name="email" required></div>
+        <div class="field"><label>Subiect <span>(obligatoriu)</span></label><input type="text" name="subiect" required></div>
+        <div class="field"><label>Mesaj <span>(obligatoriu)</span></label><textarea name="mesaj" required></textarea></div>
         <button type="submit" class="submit">Trimite</button>
       </form>
     </section>
@@ -213,6 +215,16 @@
 </main>
 
 <script>
+  /* ---------- CONTACT (Netlify Forms) ---------- */
+  function submitContact(form, e){
+    e.preventDefault();
+    const data = new URLSearchParams(new FormData(form)).toString();
+    fetch('/', { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:data })
+      .then(() => { alert('Mulțumim! Mesajul a fost trimis.'); form.reset(); })
+      .catch(() => alert('A apărut o eroare. Te rog încearcă din nou.'));
+    return false;
+  }
+
   /* ---------- DATE ---------- */
   const HERO=[
     'HIGHLIGHT/officialjpeg.jpg',
