@@ -3,6 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18337886955"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'AW-18337886955');
+</script>
+
 <title>Local to Live · 90 de zile să devii content creator pentru afacerea ta</title>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">
@@ -1732,7 +1741,7 @@ if (submitApply) {
     const data = new URLSearchParams(new FormData(form)).toString();
     submitApply.disabled = true;
     fetch('/', { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:data })
-      .then(() => { applyBody.style.display = 'none'; applySuccess.classList.add('show'); fireConfetti(); })
+      .then(() => { applyBody.style.display = 'none'; applySuccess.classList.add('show'); fireConfetti(); if (typeof gtag === 'function') gtag('event','conversion',{'send_to':'AW-18337886955/KY7GCOTWgdQcEOvll6hE','value':1.0,'currency':'RON'}); })
       .catch(() => { err.textContent = 'A apărut o eroare. Te rog încearcă din nou.'; submitApply.disabled = false; });
   });
 }

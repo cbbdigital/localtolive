@@ -265,6 +265,7 @@
         if (lead) lead.style.display = 'none';
         const ok = document.getElementById('contactSuccess');
         if (ok) ok.classList.add('show');
+        if (typeof gtag === 'function') gtag('event','conversion',{'send_to':'AW-18337886955/KY7GCOTWgdQcEOvll6hE','value':1.0,'currency':'RON'});
       })
       .catch(() => alert('A apărut o eroare. Te rog încearcă din nou.'));
     return false;
