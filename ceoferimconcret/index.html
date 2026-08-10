@@ -3,15 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18337886955"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'AW-18337886955');
-</script>
-
 <title>Servicii — Local to Live</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -104,8 +95,6 @@ header p { color: var(--gray); margin-top: 1rem; font-size: 1.05rem; }
   opacity: 0;
   transition: max-height 0.6s ease, opacity 0.4s ease, padding 0.5s ease;
 }
-.detail { scroll-margin-top: 24px; }
-.card { scroll-margin-top: 90px; }
 .detail.open { max-height: 3200px; opacity: 1; padding: 0 2rem 6rem; }
 
 .detail-top {
@@ -160,23 +149,6 @@ header p { color: var(--gray); margin-top: 1rem; font-size: 1.05rem; }
 .retention-box.in .retention-path { stroke-dashoffset: 0; }
 .retention-fill { opacity: 0; transition: opacity 1s ease 0.4s; }
 .retention-box.in .retention-fill { opacity: 1; }
-
-/* studii de caz */
-.company-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-.company { background: var(--card-2); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 1.4rem; display: flex; flex-direction: column; align-items: flex-start; gap: 0.7rem; cursor: pointer; transition: border-color 0.2s ease, transform 0.2s ease; text-align: left; color: var(--white); font-family: inherit; scroll-margin-top: 90px; }
-.company:hover { border-color: rgba(255,255,255,0.18); transform: translateY(-2px); }
-.company.active { border-color: var(--blue); }
-.clogo { width: 52px; height: 52px; border-radius: 12px; background: #26262a; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1rem; color: var(--white); overflow: hidden; }
-.clogo img { width: 100%; height: 100%; object-fit: contain; }
-.cname { font-weight: 600; font-size: 1rem; }
-.cmeta { color: var(--gray); font-size: 0.8rem; }
-.case { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.6s ease, opacity 0.4s ease, margin 0.4s ease; }
-.case.open { max-height: 2200px; opacity: 1; margin-bottom: 2rem; }
-.case-inner { background: var(--card-2); border: 1px solid rgba(255,255,255,0.06); border-radius: 18px; padding: 1.8rem 2rem; }
-.case-inner h3 { font-size: 1.35rem; font-weight: 600; margin-bottom: 1.2rem; letter-spacing: -0.01em; }
-.case-inner .block p, .case-inner .block ul { color: var(--gray); font-size: 0.95rem; line-height: 1.55; }
-.case-inner ul { padding-left: 1.1rem; }
-.case-inner li { margin-bottom: 0.3rem; }
 
 /* youtube layout */
 .yt-wrap { display: grid; grid-template-columns: 1fr 320px; gap: 1.6rem; margin-bottom: 2rem; }
@@ -499,12 +471,82 @@ header p { color: var(--gray); margin-top: 1rem; font-size: 1.05rem; }
 .reveal-line { overflow: hidden; }
 .reveal-line span { display: inline-block; animation: lineUp 0.7s cubic-bezier(0.22,1,0.36,1) both; }
 @keyframes lineUp { from { transform: translateY(100%); opacity:0; } to { transform: translateY(0); opacity:1; } }
+
+/* ── CASE STUDIES ── */
+.cases-section { max-width: 1100px; margin: 0 auto 5rem; padding: 0 2rem; }
+.cases-head { margin-bottom: 3rem; }
+.cases-head .kicker { color: var(--accent); font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem; }
+.cases-head h2 { font-size: clamp(1.8rem, 4vw, 2.4rem); font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; max-width: 720px; }
+.cases-head p { color: var(--gray); font-size: 1rem; margin-top: 1rem; line-height: 1.5; max-width: 640px; }
+
+.case-grid { display: flex; flex-direction: column; gap: 2rem; }
+
+.case {
+  background: var(--card);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 24px;
+  padding: 2.5rem;
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 2.5rem;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .case { grid-template-columns: 1fr; padding: 1.8rem; gap: 1.8rem; }
+}
+
+.case-brand { font-size: 0.72rem; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.8rem; }
+.case h3 { font-size: clamp(1.25rem, 2.6vw, 1.8rem); font-weight: 600; letter-spacing: -0.01em; margin-bottom: 1.2rem; line-height: 1.2; }
+.case .challenge { color: #d0d0d2; font-size: 0.9rem; font-weight: 500; margin-bottom: 1.4rem; padding-left: 1rem; border-left: 2px solid var(--accent); }
+.case p { color: #b8b8ba; font-size: 0.95rem; line-height: 1.6; margin-bottom: 1rem; }
+.case p:last-of-type { margin-bottom: 1.4rem; }
+
+.case-did { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 1.4rem; }
+.case-did-lbl { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gray); margin-bottom: 0.3rem; font-weight: 600; }
+.case-did-item { display: flex; gap: 0.7rem; color: #d0d0d2; font-size: 0.9rem; line-height: 1.4; align-items: flex-start; }
+.case-did-item::before { content: ""; flex-shrink: 0; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-top: 0.5em; }
+
+.case-result {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,69,58,0.15);
+  border-radius: 16px;
+  padding: 1.6rem;
+}
+.case-result-lbl { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gray); margin-bottom: 0.7rem; font-weight: 600; }
+.case-result-big { font-size: clamp(1.6rem, 2.6vw, 2rem); font-weight: 700; color: var(--white); letter-spacing: -0.01em; line-height: 1.05; margin-bottom: 0.4rem; }
+.case-result-big .unit { color: var(--accent); font-size: 0.6em; font-weight: 600; }
+.case-result-sub { color: var(--gray); font-size: 0.8rem; line-height: 1.4; }
+
+.tt-pills { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 1.1rem; }
+.tt-pill { display: inline-flex; align-items: center; gap: 0.35rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); padding: 0.35rem 0.7rem; border-radius: 20px; font-size: 0.78rem; color: var(--white); font-weight: 500; }
+.tt-pill svg { width: 13px; height: 13px; }
+.tt-pill.heart svg { fill: var(--accent); stroke: var(--accent); }
+.tt-pill.save svg { fill: #ffd23f; stroke: #ffd23f; }
+
+.case-impact {
+  margin-top: 1.3rem; padding: 0.9rem 1rem;
+  background: rgba(255,69,58,0.08);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  display: flex; align-items: flex-start; gap: 0.6rem;
+}
+.case-impact svg { flex-shrink: 0; width: 18px; height: 18px; color: var(--accent); margin-top: 2px; }
+.case-impact .txt { font-size: 0.86rem; color: var(--white); font-weight: 500; line-height: 1.4; }
+.case-impact .txt strong { font-weight: 700; }
+
+.growth-badge { display: inline-flex; align-items: center; gap: 0.35rem; background: rgba(52,199,89,0.12); color: #34c759; font-size: 0.75rem; font-weight: 600; padding: 0.28rem 0.65rem; border-radius: 20px; margin-bottom: 0.8rem; }
+.growth-badge svg { width: 11px; height: 11px; }
+
+.mini-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7rem; margin-top: 1.1rem; padding: 0.9rem 0; border-top: 1px solid rgba(255,255,255,0.06); }
+.mini-stats .ms { text-align: center; }
+.mini-stats .ms .v { font-size: 0.95rem; font-weight: 700; color: var(--white); line-height: 1; }
+.mini-stats .ms .k { color: var(--gray); font-size: 0.68rem; margin-top: 0.3rem; }
 </style>
 </head>
 <body>
 
 <header>
-  <a href="/" class="back-btn">
+  <a href="index.html" class="back-btn">
     <svg viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
     Înapoi
   </a>
@@ -540,12 +582,6 @@ header p { color: var(--gray); margin-top: 1rem; font-size: 1.05rem; }
     <svg class="card-icon" viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="18" height="12" rx="2" stroke="#fff" stroke-width="1.5"/><path d="M3 10h18" stroke="#fff" stroke-width="1.5"/></svg>
     <h3>Creare website</h3>
     <div class="tag">Prezență online</div>
-  </div>
-
-  <div class="card" data-service="cazuri">
-    <svg class="card-icon" viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="18" height="13" rx="2" stroke="#fff" stroke-width="1.5"/><path d="M8 7V5.5A1.5 1.5 0 0 1 9.5 4h5A1.5 1.5 0 0 1 16 5.5V7" stroke="#fff" stroke-width="1.5"/></svg>
-    <h3>Studii de caz</h3>
-    <div class="tag">Companii cu care am lucrat</div>
   </div>
 </div>
 
@@ -782,26 +818,18 @@ header p { color: var(--gray); margin-top: 1rem; font-size: 1.05rem; }
   </div>
 
   <div class="gads-chart-box">
-    <div class="t">Clicuri pe zi</div>
+    <div class="t">Clicuri pe săptămână</div>
     <div class="gads-bars">
-      <div class="b" data-h="22"></div>
-      <div class="b" data-h="31"></div>
-      <div class="b" data-h="27"></div>
-      <div class="b" data-h="42"></div>
-      <div class="b" data-h="48"></div>
-      <div class="b" data-h="44"></div>
-      <div class="b" data-h="56"></div>
+      <div class="b" data-h="38"></div>
+      <div class="b" data-h="52"></div>
       <div class="b" data-h="61"></div>
-      <div class="b" data-h="57"></div>
-      <div class="b" data-h="69"></div>
-      <div class="b" data-h="75"></div>
-      <div class="b" data-h="72"></div>
+      <div class="b" data-h="70"></div>
+      <div class="b" data-h="58"></div>
       <div class="b" data-h="84"></div>
-      <div class="b" data-h="91"></div>
       <div class="b" data-h="100"></div>
     </div>
     <div class="gads-bar-labels">
-      <span>Z1</span><span>Z2</span><span>Z3</span><span>Z4</span><span>Z5</span><span>Z6</span><span>Z7</span><span>Z8</span><span>Z9</span><span>Z10</span><span>Z11</span><span>Z12</span><span>Z13</span><span>Z14</span><span>Z15</span>
+      <span>S1</span><span>S2</span><span>S3</span><span>S4</span><span>S5</span><span>S6</span><span>S7</span>
     </div>
   </div>
 
@@ -964,56 +992,114 @@ header p { color: var(--gray); margin-top: 1rem; font-size: 1.05rem; }
   </div>
 </div>
 
-<!-- Studii de caz detail -->
-<div class="detail" id="detail-cazuri">
-  <div class="detail-top">
-    <h2>Studii de caz</h2>
-    <p class="lead">Câteva companii cu care am lucrat. Apasă pe o companie ca să vezi studiul de caz complet.</p>
+<!-- Case studies -->
+<section class="cases-section">
+  <div class="cases-head">
+    <div class="kicker">Studii de caz</div>
+    <h2>Rezultate reale, pentru afaceri reale.</h2>
+    <p>Trei branduri, trei situații diferite. Fiecare a plecat de la zero sau de la un blocaj, iar acum au clienți care revin.</p>
   </div>
 
-  <div class="company-grid">
-    <button class="company" data-case="firma-1">
-      <span class="clogo">C1</span>
-      <span class="cname">Nume Companie 1</span>
-      <span class="cmeta">Domeniu / oraș</span>
-    </button>
-    <button class="company" data-case="firma-2">
-      <span class="clogo">C2</span>
-      <span class="cname">Nume Companie 2</span>
-      <span class="cmeta">Domeniu / oraș</span>
-    </button>
-    <button class="company" data-case="firma-3">
-      <span class="clogo">C3</span>
-      <span class="cname">Nume Companie 3</span>
-      <span class="cmeta">Domeniu / oraș</span>
-    </button>
-  </div>
+  <div class="case-grid">
 
-  <div class="case" id="case-firma-1">
-    <div class="case-inner">
-      <h3>Nume Companie 1</h3>
-      <div class="block"><div class="label">Provocarea</div><p>Descriere scurtă a situației de la care am pornit: ce nu funcționa, ce voiau să obțină.</p></div>
-      <div class="block"><div class="label">Ce am făcut</div><ul><li>Ce am livrat, punct cu punct</li><li>Al doilea lucru concret</li><li>Al treilea lucru concret</li></ul></div>
-      <div class="stats-grid"><div class="stat-card"><div class="num accent">+X%</div><div class="lbl">Creștere vânzări</div></div><div class="stat-card"><div class="num blue">Y</div><div class="lbl">Lead-uri / lună</div></div><div class="stat-card"><div class="num ">Z</div><div class="lbl">Videoclipuri livrate</div></div></div>
+    <div class="case">
+      <div>
+        <div class="case-brand">Recompense Naturale</div>
+        <h3>Lansarea unui magazin online pentru stăpâni de animale de companie.</h3>
+        <div class="challenge">Provocare: pornire de la zero, fără audiență, fără istoric de vânzări.</div>
+        <p>Am preluat brandul de la 0 în luna mai. Am pornit cu o schemă clasică de TikTok, poze și muzică generică, apoi am construit conținut care explică concret ce produse avem și cum le livrăm. Pas cu pas, am câștigat încrederea comunității.</p>
+        <p>După ce am înțeles împreună publicul țintă, am pornit două campanii personalizate: Affiliate Marketing și Google Ads. Google Ads a prins tracțiune din primele zile, iar Affiliate Marketing reprezintă acum peste 50% din vânzările zilnice ale magazinului.</p>
+        <div class="case-did">
+          <div class="case-did-lbl">Ce am făcut</div>
+          <div class="case-did-item">Am preluat brandul de la 0.</div>
+          <div class="case-did-item">Am construit campaniile de marketing în funcție de buget și nișă.</div>
+          <div class="case-did-item">Am construit credibilitatea online prin conținut video relevant pentru comunitate.</div>
+        </div>
+      </div>
+
+      <div class="case-result">
+        <div class="case-result-lbl">Prima lună de vânzări · Shopify</div>
+        <div class="case-result-big">8.475 <span class="unit">RON</span></div>
+        <div class="growth-badge">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M4 20L20 4M20 4H8M20 4v12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          +1,7K% față de luna anterioară
+        </div>
+        <div class="case-result-sub">Rezultat direct din Google Ads și Affiliate Marketing.</div>
+        <div class="mini-stats">
+          <div class="ms"><div class="v">62</div><div class="k">comenzi</div></div>
+          <div class="ms"><div class="v">2,89%</div><div class="k">conversie</div></div>
+          <div class="ms"><div class="v">1.621</div><div class="k">sesiuni</div></div>
+        </div>
+        <div class="case-impact">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div class="txt">Affiliate Marketing generează <strong>peste 50%</strong> din vânzările zilnice.</div>
+        </div>
+      </div>
     </div>
-  </div>
-  <div class="case" id="case-firma-2">
-    <div class="case-inner">
-      <h3>Nume Companie 2</h3>
-      <div class="block"><div class="label">Provocarea</div><p>Descriere scurtă a situației de la care am pornit.</p></div>
-      <div class="block"><div class="label">Ce am făcut</div><ul><li>Ce am livrat</li><li>Al doilea lucru</li><li>Al treilea lucru</li></ul></div>
-      <div class="stats-grid"><div class="stat-card"><div class="num accent">+X%</div><div class="lbl">Reach</div></div><div class="stat-card"><div class="num blue">Y</div><div class="lbl">Comenzi</div></div><div class="stat-card"><div class="num ">Z</div><div class="lbl">Campanii</div></div></div>
+
+    <div class="case">
+      <div>
+        <div class="case-brand">curatDPF.ro</div>
+        <h3>Lansarea pe piață a serviciului de spălare filtre particule.</h3>
+        <div class="challenge">Provocare: serviciu de nișă, fără prezență online, competiție locală agresivă.</div>
+        <p>Pentru curatDPF.ro am construit toată prezența online, de la website-ul de prezentare până la campania de TikTok cu creștere 100% organică. Un singur videoclip a adunat 107.000 vizualizări și a devenit punctul de pornire pentru primii clienți reali.</p>
+        <p>Nu am rămas la statistici. Am transformat interesul în încredere, iar încrederea în comenzi. În prima săptămână după lansare am spălat 10 DPF-uri, iar de atunci business-ul funcționează pe bază de recomandări și colaborări cu service-uri partenere.</p>
+        <div class="case-did">
+          <div class="case-did-lbl">Ce am făcut</div>
+          <div class="case-did-item">Am lansat brandul curatDPF.ro.</div>
+          <div class="case-did-item">Am explicat pentru spațiul local, prin conținut, metoda de colaborare cu service-uri partenere.</div>
+        </div>
+      </div>
+
+      <div class="case-result">
+        <div class="case-result-lbl">Un singur videoclip TikTok</div>
+        <div class="case-result-big">107K <span class="unit">vizualizări</span></div>
+        <div class="case-result-sub">Organic, fără un leu investit în promovare.</div>
+        <div class="tt-pills">
+          <span class="tt-pill heart"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-10-9.2C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.4 2.4.8 1.1 1 1.6 2 1.6s1.2-.5 2-1.6C15 5.9 16.4 5 18.4 5 22 5 23.6 8.6 22 11.8 19.5 16.4 12 21 12 21z" stroke-width="1.6"/></svg>2.282</span>
+          <span class="tt-pill"><svg viewBox="0 0 24 24" fill="none"><path d="M4 4h16v12H8l-4 4V4z" stroke="#fff" stroke-width="1.6"/></svg>97</span>
+          <span class="tt-pill save"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4V3z" stroke-width="1.6"/></svg>326</span>
+        </div>
+        <div class="case-impact">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div class="txt"><strong>10 DPF-uri</strong> spălate în prima săptămână după lansare, direct din încrederea generată de videoclip.</div>
+        </div>
+      </div>
     </div>
-  </div>
-  <div class="case" id="case-firma-3">
-    <div class="case-inner">
-      <h3>Nume Companie 3</h3>
-      <div class="block"><div class="label">Provocarea</div><p>Descriere scurtă a situației de la care am pornit.</p></div>
-      <div class="block"><div class="label">Ce am făcut</div><ul><li>Ce am livrat</li><li>Al doilea lucru</li><li>Al treilea lucru</li></ul></div>
-      <div class="stats-grid"><div class="stat-card"><div class="num accent">+X%</div><div class="lbl">Conversii</div></div><div class="stat-card"><div class="num blue">Y</div><div class="lbl">Trafic</div></div><div class="stat-card"><div class="num ">Z</div><div class="lbl">Luni colaborare</div></div></div>
+
+    <div class="case">
+      <div>
+        <div class="case-brand">DUXU Concept</div>
+        <h3>Vizibilitate locală pentru un magazin fizic de mobilier.</h3>
+        <div class="challenge">Provocare: magazin fizic care încercase repetat TikTok Ads plătit, fără rezultat.</div>
+        <p>DUXU Concept comercializează canapele, paturi, mese din lemn, scaune și piese de mobilier pentru casă. Clientul își dorea vizibilitate online 100% organică, fără plată, după ce încercase TikTok Ads fără succesul dorit.</p>
+        <p>Am creat împreună un set de videoclipuri organice, iar unul dintre ele a strâns 20.000 de vizualizări fără niciun leu investit. Rezultatul nu s-a măsurat doar în views, ci în oameni care au ajuns în magazinul fizic. Ulterior, i-am arătat cum să gândească și cum să editeze singur clipurile, iar acum produce constant conținut care aduce clienți.</p>
+        <div class="case-did">
+          <div class="case-did-lbl">Ce am făcut</div>
+          <div class="case-did-item">Am lansat DUXU Concept în mediul online.</div>
+          <div class="case-did-item">Am construit un flux de lucru în care clientul produce singur videoclipurile, de la script până la echipament.</div>
+          <div class="case-did-item">Am construit un brand local cu clientela dorită, care se autosusține.</div>
+        </div>
+      </div>
+
+      <div class="case-result">
+        <div class="case-result-lbl">Un singur videoclip TikTok</div>
+        <div class="case-result-big">20K <span class="unit">vizualizări</span></div>
+        <div class="case-result-sub">Organic, fără promovare plătită.</div>
+        <div class="tt-pills">
+          <span class="tt-pill heart"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-10-9.2C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.4 2.4.8 1.1 1 1.6 2 1.6s1.2-.5 2-1.6C15 5.9 16.4 5 18.4 5 22 5 23.6 8.6 22 11.8 19.5 16.4 12 21 12 21z" stroke-width="1.6"/></svg>421</span>
+          <span class="tt-pill"><svg viewBox="0 0 24 24" fill="none"><path d="M4 4h16v12H8l-4 4V4z" stroke="#fff" stroke-width="1.6"/></svg>48</span>
+          <span class="tt-pill save"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4V3z" stroke-width="1.6"/></svg>76</span>
+        </div>
+        <div class="case-impact">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div class="txt"><strong>Clienți noi în magazinul fizic</strong>, veniți direct din videoclipurile de pe TikTok.</div>
+        </div>
+      </div>
     </div>
+
   </div>
-</div>
+</section>
 
 <!-- Timeline process -->
 <section class="timeline">
@@ -1046,13 +1132,13 @@ header p { color: var(--gray); margin-top: 1rem; font-size: 1.05rem; }
     </div>
 
     <div class="tl-phase">
-      <div class="tl-phase-lbl">După cele 90 de zile</div>
+      <div class="tl-phase-lbl">După cele 30 de zile</div>
     </div>
 
     <div class="tl-item">
       <div class="tl-when">De aici încolo</div>
       <h4>Preiei tu, eu rămân aproape</h4>
-      <p>Cele 90 de zile au un scop clar: să știi să te descurci singur. La final îți las traiectoria de urmat, o analiză onestă și tot ce am construit împreună. Nu semnez abonamente, nu te leg de mine. Rămânem prieteni, iar când ai o întrebare sau vrei o părere, sunt la un mesaj distanță.</p>
+      <p>Cele 30 de zile au un scop clar: să știi să te descurci singur. La final îți las traiectoria de urmat, o analiză onestă și tot ce am construit împreună. Nu semnez abonamente, nu te leg de mine. Rămânem prieteni, iar când ai o întrebare sau vrei o părere, sunt la un mesaj distanță.</p>
     </div>
   </div>
 </section>
@@ -1090,24 +1176,9 @@ document.querySelectorAll('.card:not(.disabled)').forEach(card => {
       panel.classList.add('open');
       card.classList.add('active');
       setTimeout(() => {
-        card.scrollIntoView({behavior:'smooth', block:'start'});
+        panel.scrollIntoView({behavior:'smooth', block:'start'});
         initStatsAnimation(panel);
-      }, 150);
-    }
-  });
-});
-
-document.querySelectorAll('.company').forEach(comp => {
-  comp.addEventListener('click', () => {
-    const key = comp.dataset.case;
-    const box = document.getElementById('case-' + key);
-    const isOpen = box.classList.contains('open');
-    document.querySelectorAll('.case.open').forEach(c => c.classList.remove('open'));
-    document.querySelectorAll('.company.active').forEach(c => c.classList.remove('active'));
-    if (!isOpen) {
-      box.classList.add('open');
-      comp.classList.add('active');
-      setTimeout(() => { comp.scrollIntoView({behavior:'smooth', block:'start'}); }, 150);
+      }, 100);
     }
   });
 });
