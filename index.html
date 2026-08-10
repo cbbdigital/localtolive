@@ -34,7 +34,7 @@
 }
 
 html { scroll-behavior: smooth; }
-#servicii, #pret, #contact, #program, .pin-wrap { scroll-margin-top: 76px; }
+#servicii, #pret, #contact, #program, #portofoliu, .pin-wrap { scroll-margin-top: 76px; }
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -912,6 +912,101 @@ section { padding: 6rem 0; }
 .contact h2 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 600; letter-spacing: -0.02em; }
 .contact p { color: var(--gray); font-size: 1.2rem; margin-top: 1rem; }
 .contact .actions { margin-top: 2rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+/* ── CASE STUDIES ── */
+.cases { padding: 6rem 0 4rem; }
+.cases .section-head { text-align: left; max-width: 800px; margin-bottom: 4rem; }
+.cases .kicker { color: var(--accent); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem; }
+.cases h2 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; }
+.cases .lead { color: var(--gray); font-size: 1.15rem; margin-top: 1rem; line-height: 1.5; max-width: 640px; }
+
+.case-grid { display: flex; flex-direction: column; gap: 2rem; }
+
+.case {
+  background: var(--card);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 24px;
+  padding: 3rem;
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 3rem;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .case { grid-template-columns: 1fr; padding: 2rem; gap: 2rem; }
+}
+
+.case-brand { font-size: 0.78rem; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.8rem; }
+.case h3 { font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 600; letter-spacing: -0.01em; margin-bottom: 1.5rem; line-height: 1.2; }
+.case .challenge { color: #d0d0d2; font-size: 0.92rem; font-weight: 500; margin-bottom: 1.5rem; padding-left: 1rem; border-left: 2px solid var(--accent); }
+.case p { color: #b8b8ba; font-size: 1rem; line-height: 1.6; margin-bottom: 1rem; }
+.case p:last-of-type { margin-bottom: 1.5rem; }
+
+.case-did { display: flex; flex-direction: column; gap: 0.7rem; margin-top: 1.5rem; }
+.case-did-lbl { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gray); margin-bottom: 0.4rem; font-weight: 600; }
+.case-did-item { display: flex; gap: 0.7rem; color: #d0d0d2; font-size: 0.92rem; line-height: 1.4; align-items: flex-start; }
+.case-did-item::before {
+  content: ""; flex-shrink: 0; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent); margin-top: 0.5em;
+}
+
+.case-result {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,69,58,0.15);
+  border-radius: 16px;
+  padding: 1.8rem;
+  position: relative;
+}
+.case-result-lbl { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gray); margin-bottom: 0.8rem; font-weight: 600; }
+.case-result-big { font-size: clamp(1.8rem, 3vw, 2.4rem); font-weight: 700; color: var(--white); letter-spacing: -0.01em; line-height: 1.05; margin-bottom: 0.4rem; }
+.case-result-big .unit { color: var(--accent); font-size: 0.6em; font-weight: 600; }
+.case-result-sub { color: var(--gray); font-size: 0.82rem; line-height: 1.4; }
+
+/* engagement pills (TikTok style) */
+.tt-pills { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.2rem; }
+.tt-pill {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 0.4rem 0.75rem; border-radius: 20px;
+  font-size: 0.82rem; color: var(--white); font-weight: 500;
+}
+.tt-pill svg { width: 14px; height: 14px; }
+.tt-pill.heart svg { fill: var(--accent); stroke: var(--accent); }
+.tt-pill.save svg { fill: #ffd23f; stroke: #ffd23f; }
+
+/* impact callout (business outcome) */
+.case-impact {
+  margin-top: 1.4rem; padding: 1rem 1.1rem;
+  background: rgba(255,69,58,0.08);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  display: flex; align-items: flex-start; gap: 0.7rem;
+}
+.case-impact svg { flex-shrink: 0; width: 20px; height: 20px; color: var(--accent); margin-top: 2px; }
+.case-impact .txt { font-size: 0.9rem; color: var(--white); font-weight: 500; line-height: 1.4; }
+.case-impact .txt strong { font-weight: 700; }
+
+/* growth badge */
+.growth-badge {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  background: rgba(52,199,89,0.12);
+  color: #34c759;
+  font-size: 0.78rem; font-weight: 600;
+  padding: 0.3rem 0.7rem; border-radius: 20px;
+  margin-bottom: 0.9rem;
+}
+.growth-badge svg { width: 12px; height: 12px; }
+
+/* mini stats grid (Shopify KPIs) */
+.mini-stats {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 0.8rem; margin-top: 1.2rem;
+  padding: 1rem 0; border-top: 1px solid rgba(255,255,255,0.06);
+}
+.mini-stats .ms { text-align: center; }
+.mini-stats .ms .v { font-size: 1rem; font-weight: 700; color: var(--white); line-height: 1; }
+.mini-stats .ms .k { color: var(--gray); font-size: 0.7rem; margin-top: 0.3rem; }
 .contact-card {
   margin: 2.5rem auto 0; max-width: 360px;
   display: flex; align-items: center; gap: 1rem; text-align: left;
@@ -1065,6 +1160,7 @@ footer { border-top: 1px solid rgba(255,255,255,0.08); padding: 3.5rem 0 2.5rem;
     <div class="nav-right">
       <a href="#servicii">Servicii</a>
       <a href="#program">Program</a>
+      <a href="#portofoliu">Portofoliu</a>
       <a href="#pret">Preț</a>
       <a href="#contact" class="pill">Începe</a>
     </div>
@@ -1406,6 +1502,143 @@ footer { border-top: 1px solid rgba(255,255,255,0.08); padding: 3.5rem 0 2.5rem;
     </div>
   </div>
   <div class="dots" id="dots"></div>
+</section>
+
+<!-- CASE STUDIES -->
+<section id="portofoliu" class="wrap cases reveal">
+  <div class="section-head">
+    <div class="kicker">Studii de caz</div>
+    <h2>Rezultate reale, pentru afaceri reale.</h2>
+    <p class="lead">Trei branduri, trei situații diferite. Fiecare a plecat de la zero sau de la un blocaj, iar acum au clienți care revin.</p>
+  </div>
+
+  <div class="case-grid">
+
+    <div class="case">
+      <div>
+        <div class="case-brand">Recompense Naturale</div>
+        <h3>Lansarea unui magazin online pentru stăpâni de animale de companie.</h3>
+        <div class="challenge">Provocare: pornire de la zero, fără audiență, fără istoric de vânzări.</div>
+        <p>Am preluat brandul de la 0 în luna mai. Am pornit cu o schemă clasică de TikTok, poze și muzică generică, apoi am construit conținut care explică concret ce produse avem și cum le livrăm. Pas cu pas, am câștigat încrederea comunității.</p>
+        <p>După ce am înțeles împreună publicul țintă, am pornit două campanii personalizate: Affiliate Marketing și Google Ads. Google Ads a prins tracțiune din primele zile, iar Affiliate Marketing reprezintă acum peste 50% din vânzările zilnice ale magazinului.</p>
+        <p>Videoclipurile de TikTok au o medie de 1.000–2.000 vizualizări. În spatele acelor numere sunt oameni, nu doar statistici. Pe asta ne-am bazat.</p>
+
+        <div class="case-did">
+          <div class="case-did-lbl">Ce am făcut</div>
+          <div class="case-did-item">Am preluat brandul de la 0.</div>
+          <div class="case-did-item">Am construit campaniile de marketing în funcție de buget și nișă.</div>
+          <div class="case-did-item">Am construit credibilitatea online prin conținut video relevant pentru comunitate.</div>
+        </div>
+      </div>
+
+      <div class="case-result">
+        <div class="case-result-lbl">Prima lună de vânzări · Shopify</div>
+        <div class="case-result-big">8.475 <span class="unit">RON</span></div>
+        <div class="growth-badge">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M4 20L20 4M20 4H8M20 4v12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          +1,7K% față de luna anterioară
+        </div>
+        <div class="case-result-sub">Rezultat direct din Google Ads și Affiliate Marketing.</div>
+
+        <div class="mini-stats">
+          <div class="ms"><div class="v">62</div><div class="k">comenzi</div></div>
+          <div class="ms"><div class="v">2,89%</div><div class="k">conversie</div></div>
+          <div class="ms"><div class="v">1.621</div><div class="k">sesiuni</div></div>
+        </div>
+
+        <div class="case-impact">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div class="txt">Affiliate Marketing generează <strong>peste 50%</strong> din vânzările zilnice.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="case">
+      <div>
+        <div class="case-brand">curatDPF.ro</div>
+        <h3>Lansarea pe piață a serviciului de spălare filtre particule.</h3>
+        <div class="challenge">Provocare: serviciu de nișă, fără prezență online, competiție locală agresivă.</div>
+        <p>Pentru curatDPF.ro am construit toată prezența online, de la website-ul de prezentare până la campania de TikTok cu creștere 100% organică. Un singur videoclip a adunat 107.000 vizualizări și a devenit punctul de pornire pentru primii clienți reali.</p>
+        <p>Nu am rămas la statistici. Am transformat interesul în încredere, iar încrederea în comenzi. În prima săptămână după lansare am spălat 10 DPF-uri, iar de atunci business-ul funcționează pe bază de recomandări și colaborări cu service-uri partenere.</p>
+
+        <div class="case-did">
+          <div class="case-did-lbl">Ce am făcut</div>
+          <div class="case-did-item">Am lansat brandul curatDPF.ro.</div>
+          <div class="case-did-item">Am explicat pentru spațiul local, prin conținut, metoda de colaborare cu service-uri partenere.</div>
+        </div>
+      </div>
+
+      <div class="case-result">
+        <div class="case-result-lbl">Un singur videoclip TikTok</div>
+        <div class="case-result-big">107K <span class="unit">vizualizări</span></div>
+        <div class="case-result-sub">Organic, fără un leu investit în promovare.</div>
+
+        <div class="tt-pills">
+          <span class="tt-pill heart">
+            <svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-10-9.2C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.4 2.4.8 1.1 1 1.6 2 1.6s1.2-.5 2-1.6C15 5.9 16.4 5 18.4 5 22 5 23.6 8.6 22 11.8 19.5 16.4 12 21 12 21z" stroke-width="1.6"/></svg>
+            2.282
+          </span>
+          <span class="tt-pill">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 4h16v12H8l-4 4V4z" stroke="#fff" stroke-width="1.6"/></svg>
+            97
+          </span>
+          <span class="tt-pill save">
+            <svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4V3z" stroke-width="1.6"/></svg>
+            326
+          </span>
+        </div>
+
+        <div class="case-impact">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div class="txt"><strong>10 DPF-uri</strong> spălate în prima săptămână după lansare, direct din încrederea generată de videoclip.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="case">
+      <div>
+        <div class="case-brand">DUXU Concept</div>
+        <h3>Vizibilitate locală pentru un magazin fizic de mobilier.</h3>
+        <div class="challenge">Provocare: magazin fizic care încercase repetat TikTok Ads plătit, fără rezultat.</div>
+        <p>DUXU Concept comercializează canapele, paturi, mese din lemn, scaune și piese de mobilier pentru casă. Clientul își dorea vizibilitate online 100% organică, fără plată, după ce încercase TikTok Ads fără succesul dorit.</p>
+        <p>Am creat împreună un set de videoclipuri organice, iar unul dintre ele a strâns 20.000 de vizualizări fără niciun leu investit. Rezultatul nu s-a măsurat doar în views, ci în oameni care au ajuns în magazinul fizic. Ulterior, i-am arătat cum să gândească și cum să editeze singur clipurile, iar acum produce constant conținut care aduce clienți.</p>
+
+        <div class="case-did">
+          <div class="case-did-lbl">Ce am făcut</div>
+          <div class="case-did-item">Am lansat DUXU Concept în mediul online.</div>
+          <div class="case-did-item">Am construit un flux de lucru în care clientul produce singur videoclipurile, de la script până la echipament.</div>
+          <div class="case-did-item">Am construit un brand local cu clientela dorită, care se autosusține.</div>
+        </div>
+      </div>
+
+      <div class="case-result">
+        <div class="case-result-lbl">Un singur videoclip TikTok</div>
+        <div class="case-result-big">20K <span class="unit">vizualizări</span></div>
+        <div class="case-result-sub">Organic, fără promovare plătită.</div>
+
+        <div class="tt-pills">
+          <span class="tt-pill heart">
+            <svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-10-9.2C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.4 2.4.8 1.1 1 1.6 2 1.6s1.2-.5 2-1.6C15 5.9 16.4 5 18.4 5 22 5 23.6 8.6 22 11.8 19.5 16.4 12 21 12 21z" stroke-width="1.6"/></svg>
+            421
+          </span>
+          <span class="tt-pill">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 4h16v12H8l-4 4V4z" stroke="#fff" stroke-width="1.6"/></svg>
+            48
+          </span>
+          <span class="tt-pill save">
+            <svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4V3z" stroke-width="1.6"/></svg>
+            76
+          </span>
+        </div>
+
+        <div class="case-impact">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div class="txt"><strong>Clienți noi în magazinul fizic</strong>, veniți direct din videoclipurile de pe TikTok.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
 </section>
 
 <!-- PRICING -->
