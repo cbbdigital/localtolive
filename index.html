@@ -1499,18 +1499,8 @@ footer { border-top: 1px solid rgba(255,255,255,0.08); padding: 3.5rem 0 2.5rem;
     <button type="button" class="btn-primary apply-btn" id="openApply">Înscrie-te</button>
   </div>
 
-  <div class="contact-card">
-    <div class="cc-avatar" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="8" r="3.6"/>
-        <path d="M4.5 20c0-3.6 3.2-6 7.5-6s7.5 2.4 7.5 6"/>
-      </svg>
-    </div>
-    <div class="cc-info">
-      <div class="cc-name">Ciprian Badic</div>
-      <a class="cc-email" href="mailto:office@localtolive.ro">office@localtolive.ro</a>
-      <div class="cc-hours">Program: Luni – Vineri, 10:00–18:00</div>
-    </div>
+  <div style="display:flex;justify-content:center;margin-top:1.5rem;">
+    <button type="button" id="openContactCard2" style="background:transparent;color:#f5f5f7;border:1px solid rgba(255,255,255,0.2);padding:0.6rem 1.6rem;border-radius:980px;font-family:inherit;font-size:0.95rem;font-weight:500;cursor:pointer;transition:background 0.2s ease;">Contact</button>
   </div>
 </section>
 
@@ -1912,12 +1902,14 @@ if (reduceMotion) {
 (function() {
   var overlay = document.getElementById('contactCard');
   var openBtn = document.getElementById('openContactCard');
+  var openBtn2 = document.getElementById('openContactCard2');
   var closeBtn = document.getElementById('closeContactCard');
-  if (!overlay || !openBtn) return;
+  if (!overlay) return;
   function open() { overlay.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
   function close() { overlay.style.display = 'none'; document.body.style.overflow = ''; }
-  openBtn.addEventListener('click', open);
-  closeBtn.addEventListener('click', close);
+  if (openBtn) openBtn.addEventListener('click', open);
+  if (openBtn2) openBtn2.addEventListener('click', open);
+  if (closeBtn) closeBtn.addEventListener('click', close);
   overlay.addEventListener('click', function(e) { if (e.target === overlay) close(); });
   document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close(); });
 })();
