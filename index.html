@@ -87,7 +87,7 @@ nav {
 .brand .b-live {
   color: var(--accent);
   display: inline-flex;
-  align-items: center;
+  align-items: baseline;
   gap: 0.3em;
 }
 .brand .live-dot {
@@ -95,7 +95,7 @@ nav {
   height: 0.32em;
   border-radius: 50%;
   background: var(--accent);
-  align-self: center;
+  transform: translateY(-0.15em);
   animation: epulse 1.6s ease-in-out infinite;
 }
 @media (prefers-reduced-motion: reduce) { .brand .live-dot { animation: none; } }
