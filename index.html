@@ -8,6 +8,16 @@
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
+
+  // Google Consent Mode v2 defaults (deny until user accepts)
+  gtag('consent', 'default', {
+    'ad_storage': 'denied',
+    'ad_user_data': 'denied',
+    'ad_personalization': 'denied',
+    'analytics_storage': 'denied',
+    'wait_for_update': 500
+  });
+
   gtag('js', new Date());
   gtag('config', 'AW-18337886955');
 
@@ -956,6 +966,18 @@ section { padding: 6rem 0; }
   0%, 100% { box-shadow: 0 0 20px rgba(41,151,255,0.35); }
   50% { box-shadow: 0 0 34px rgba(41,151,255,0.65); }
 }
+@keyframes contactGlow {
+  0%, 100% { box-shadow: 0 0 20px rgba(255,69,58,0.35); }
+  50% { box-shadow: 0 0 34px rgba(255,69,58,0.65); }
+}
+.contact-btn-red {
+  box-shadow: 0 0 24px rgba(255,69,58,0.45);
+  animation: contactGlow 2.4s ease-in-out infinite;
+}
+.contact-btn-red:hover { box-shadow: 0 0 34px rgba(255,69,58,0.75); border-color: rgba(255,69,58,0.4) !important; }
+@media (prefers-reduced-motion: reduce) {
+  .contact-btn-red { animation: none; }
+}
 @media (prefers-reduced-motion: reduce) {
   .apply-btn { animation: none; }
 }
@@ -1500,7 +1522,7 @@ footer { border-top: 1px solid rgba(255,255,255,0.08); padding: 3.5rem 0 2.5rem;
   </div>
 
   <div style="display:flex;justify-content:center;margin-top:1.5rem;">
-    <button type="button" id="openContactCard2" style="background:transparent;color:#f5f5f7;border:1px solid rgba(255,255,255,0.2);padding:0.6rem 1.6rem;border-radius:980px;font-family:inherit;font-size:0.95rem;font-weight:500;cursor:pointer;transition:background 0.2s ease;">Contact</button>
+    <button type="button" id="openContactCard2" class="contact-btn-red" style="background:transparent;color:#f5f5f7;border:1px solid rgba(255,255,255,0.2);padding:0.85rem 2.5rem;border-radius:980px;font-family:inherit;font-size:1.05rem;font-weight:500;cursor:pointer;transition:background 0.2s ease, border-color 0.2s ease;width:100%;max-width:340px;">Contact</button>
   </div>
 </section>
 
@@ -1620,7 +1642,6 @@ footer { border-top: 1px solid rgba(255,255,255,0.08); padding: 3.5rem 0 2.5rem;
 
     <div class="footer-bottom">
       <span>© 2026 Local to Live. Toate drepturile rezervate.</span>
-      <span>Conform legislației în vigoare · Made in România</span>
     </div>
   </div>
 </footer>
@@ -1912,6 +1933,61 @@ if (reduceMotion) {
   if (closeBtn) closeBtn.addEventListener('click', close);
   overlay.addEventListener('click', function(e) { if (e.target === overlay) close(); });
   document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close(); });
+})();
+</script>
+
+<!-- Cookie consent banner -->
+<div id="cookieBanner" style="position:fixed;bottom:0;left:0;right:0;z-index:9998;background:rgba(19,19,20,0.98);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid rgba(255,255,255,0.08);padding:1.25rem 1.5rem;display:none;font-family:'Space Grotesk',-apple-system,sans-serif;box-shadow:0 -8px 40px rgba(0,0,0,0.4);">
+  <div style="max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;justify-content:space-between;">
+    <div style="flex:1;min-width:260px;color:#d0d0d2;font-size:0.9rem;line-height:1.5;">
+      Folosim cookie-uri pentru a măsura performanța site-ului și a-ți oferi o experiență relevantă. Poți accepta toate sau doar cele esențiale.
+    </div>
+    <div style="display:flex;gap:0.7rem;flex-wrap:wrap;">
+      <button type="button" id="cookieReject" style="background:transparent;color:#d0d0d2;border:1px solid rgba(255,255,255,0.2);padding:0.65rem 1.4rem;border-radius:980px;font-family:inherit;font-size:0.9rem;font-weight:500;cursor:pointer;transition:background 0.2s ease;">Doar esențiale</button>
+      <button type="button" id="cookieAccept" style="background:#ff453a;color:#fff;border:0;padding:0.65rem 1.6rem;border-radius:980px;font-family:inherit;font-size:0.9rem;font-weight:600;cursor:pointer;transition:background 0.2s ease;">Accept toate</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  var banner = document.getElementById('cookieBanner');
+  var accept = document.getElementById('cookieAccept');
+  var reject = document.getElementById('cookieReject');
+  if (!banner) return;
+
+  var stored = null;
+  try { stored = localStorage.getItem('ltl_cookie_consent'); } catch(e) {}
+
+  if (!stored) {
+    setTimeout(function() { banner.style.display = 'block'; }, 800);
+  } else if (stored === 'all') {
+    updateConsent(true);
+  }
+
+  function updateConsent(granted) {
+    if (typeof gtag !== 'function') return;
+    var state = granted ? 'granted' : 'denied';
+    gtag('consent', 'update', {
+      'ad_storage': state,
+      'ad_user_data': state,
+      'ad_personalization': state,
+      'analytics_storage': state
+    });
+  }
+
+  function hide() { banner.style.display = 'none'; }
+
+  accept.addEventListener('click', function() {
+    try { localStorage.setItem('ltl_cookie_consent', 'all'); } catch(e) {}
+    updateConsent(true);
+    hide();
+  });
+  reject.addEventListener('click', function() {
+    try { localStorage.setItem('ltl_cookie_consent', 'essential'); } catch(e) {}
+    updateConsent(false);
+    hide();
+  });
 })();
 </script>
 
