@@ -1171,12 +1171,12 @@ document.querySelectorAll('.card:not(.disabled)').forEach(card => {
     if (!isOpen) {
       panel.classList.add('open');
       card.classList.add('active');
-      // Scroll to the clicked card (stable position), so user sees card + detail below
+      // Wait for open/close animation, then scroll to the detail panel
       setTimeout(() => {
-        const y = card.getBoundingClientRect().top + window.scrollY - 20;
+        const y = panel.getBoundingClientRect().top + window.scrollY - 20;
         window.scrollTo({top: y, behavior: 'smooth'});
         initStatsAnimation(panel);
-      }, 700); // wait for open/close animation to finish
+      }, 700);
     }
   });
 });
