@@ -556,8 +556,8 @@ tbody tr:hover{background:rgba(255,255,255,0.02)}
         <div class="sb-client" onclick="clientCardClick()">
           <div class="sb-avatar" id="clientAvatar">BM</div>
           <div class="who">
-            <div class="n" id="clientName">Brandul Meu SRL</div>
-            <div class="p" id="clientPlan">Plan 90 de zile · activ</div>
+            <div class="n" id="clientName">—</div>
+            <div class="p" id="clientPlan">—</div>
           </div>
           <svg class="sb-switch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 9l4-4 4 4M8 15l4 4 4-4"/></svg>
         </div>
@@ -820,91 +820,11 @@ const grads=[
 let uid=100;
 const dlIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M8 11l4 4 4-4M6 20h12"/></svg>';
 function starterChat(){return [{from:'team',text:'Salut! Dacă vrei o ajustare la acest material sau ai o părere, scrie-mi aici.'}]}
-let S={
-  stats:[
-    {v:'60',l:'Materiale livrate',d:'▲ 8 noi săptămâna asta',bg:'rgba(41,151,255,0.14)',ic:'#2997ff'},
-    {v:'3',l:'Campanii Ads active',d:'Meta · Google · TikTok',bg:'rgba(255,69,58,0.14)',ic:'#ff453a'},
-    {v:'+142%',l:'Reach vs luna trecută',d:'▲ creștere constantă',bg:'rgba(52,199,89,0.14)',ic:'#34c759'},
-    {v:'1',l:'Factură de plată',d:'Scadentă 25 aug',bg:'rgba(255,159,10,0.14)',ic:'#ff9f0a'}
-  ],
-  activity:[
-    {c:'#2997ff',bg:'rgba(41,151,255,0.14)',t:'<b>8 fotografii noi</b> încărcate în „Foto"',m:'Colecția „Produse toamnă" · acum 2 ore',go:'photo'},
-    {c:'#ff453a',bg:'rgba(255,69,58,0.14)',t:'<b>Reel nou</b> — „Behind the scenes"',m:'Gata de postat · ieri',go:'video'},
-    {c:'#34c759',bg:'rgba(52,199,89,0.14)',t:'<b>Strategie Google Ads</b> actualizată',m:'Buget realocat spre căutări brand · 14 aug',go:'ads'},
-    {c:'#ff9f0a',bg:'rgba(255,159,10,0.14)',t:'<b>Factură nouă</b> — August 2026',m:'3.500 RON · scadentă 25 aug · 12 aug',go:'invoices'}
-  ],
-  steps:[
-    {av:'✓',g:'linear-gradient(135deg,#2997ff,#7c4dff)',t:'Aprobă reel-ul „BTS"',m:'Așteaptă feedback-ul tău',go:'video'},
-    {av:'!',g:'linear-gradient(135deg,#ff453a,#ff9f0a)',t:'Achită factura August',m:'Scadentă în 7 zile',go:'pay'},
-    {av:'📅',g:'linear-gradient(135deg,#34c759,#0a3a1c)',t:'Sesiune 1-to-1',m:'Vineri, 22 aug · 15:00',go:'overview'}
-  ],
-  photos:[],videos:[],
-  strats:[],
-  invoices:[
-    {id:1,num:'#2026-08',period:'August 2026',amount:'3.500 RON',status:'due',note:'Scadentă 25 aug'},
-    {id:2,num:'#2026-07',period:'Iulie 2026',amount:'3.500 RON',status:'paid',note:'Plătită 04 iul'},
-    {id:3,num:'#2026-06',period:'Iunie 2026',amount:'3.500 RON',status:'paid',note:'Plătită 03 iun'},
-    {id:4,num:'#2026-05',period:'Mai 2026',amount:'3.500 RON',status:'paid',note:'Plătită 05 mai'}
-  ]
-};
-const photoCats=['Produse','Lifestyle','Produse','Ads creatives','Echipă','Lifestyle','Produse','Ads creatives','Lifestyle','Produse','Echipă','Produse'];
-const photoDescs={
-  'Produse':'Prezentare produs pe fundal curat — ideală pentru catalog, site și postări de vânzare.',
-  'Lifestyle':'Produsul în context real de folosire — perfectă pentru feed și storytelling de brand.',
-  'Ads creatives':'Creativ optimizat pentru reclame plătite (Meta / Google), cu spațiu pentru text.',
-  'Echipă':'Oamenii din spatele afacerii — construiește încredere și apropiere cu clienții.'
-};
-photoCats.forEach((c,i)=>S.photos.push({id:++uid,title:`Foto_${String(i+1).padStart(2,'0')}_2026.jpg`,cat:c,meta:'4000×5000 · 3.2 MB',grad:grads[i%grads.length],desc:photoDescs[c]||'',author:(i===4||i===10)?'client':'agency',chat:starterChat()}));
-[['Reel · Lansare toamnă','0:28','Reel de lansare a colecției de toamnă. Hook în primele 2 secunde, ritm rapid, CTA la final. Recomandat pe Instagram Reels și TikTok.'],
- ['Produs · Prezentare','0:45','Clip de prezentare a produsului, cu detalii și beneficii. Bun pentru pagina de produs și reclame de conversie.'],
- ['BTS · Behind the scenes','0:34','Din culise — cum se face produsul. Crește autenticitatea și încrederea în brand.'],
- ['Testimonial client','1:02','Testimonial video de la un client mulțumit. Ideal pentru social proof în campanii.'],
- ['Reel · Ofertă','0:22','Reel scurt care anunță oferta curentă. Mesaj clar + urgență, gândit pentru reach maxim.'],
- ['Unboxing produs','0:51','Experiența de unboxing filmată — declanșează dorința de cumpărare și e foarte shareable.']
-].forEach((v,i)=>S.videos.push({id:++uid,title:v[0],dur:v[1],meta:'1080×1920 · MP4',grad:grads[i%grads.length],desc:v[2],author:'agency',chat:starterChat()}));
-S.notes=[
-  {id:++uid,title:'Brief conținut — Septembrie',date:'16 aug 2026',author:'agency',body:'Focus luna viitoare:\n\n• 3 reels pe săptămână (produs, lifestyle, ofertă)\n• 1 testimonial video\n• serie „întrebări frecvente" pentru storytelling\n\nTon: cald, direct, orientat spre beneficiul clientului. Evităm limbajul corporate.'},
-  {id:++uid,title:'Idei de la mine',date:'12 aug 2026',author:'client',body:'1. Ziua din spatele afacerii (BTS)\n2. Cum alegi produsul potrivit\n3. Înainte / după\n4. Reacția clienților la produs\n5. Mituri despre domeniul meu — demontate'},
-  {id:++uid,title:'Observații campanie Meta',date:'09 aug 2026',author:'agency',body:'Creativele cu oameni performează mai bine decât cele doar cu produs. Mutăm bugetul spre acele variante și testăm 2 hook-uri noi săptămâna viitoare.'},
-  {id:++uid,title:'Direcție de brand',date:'02 aug 2026',author:'agency',body:'Mesajul central: „De la anonimat local la vânzări zilnice online." Toate materialele trebuie să susțină această promisiune, cu dovezi concrete (comenzi, clienți).'}
-];
+let S={stats:[],activity:[],steps:[],photos:[],videos:[],strats:[],invoices:[],notes:[]};
 
 /* ═══ MULTI-CLIENT (agency) ═══ */
-function genClient(id,name,domain,tarif){
-  const photos=[];
-  ['Produse','Lifestyle','Produse','Ads creatives','Echipă','Produse'].forEach((c,i)=>photos.push({id:++uid,title:`Foto_${String(i+1).padStart(2,'0')}.jpg`,cat:c,meta:'4000×5000 · 3.1 MB',grad:grads[i%grads.length],desc:photoDescs[c]||'',author:'agency',chat:starterChat()}));
-  const videos=[];
-  [['Reel · Prezentare','0:26'],['Clip produs','0:39'],['Testimonial client','0:58']].forEach((v,i)=>videos.push({id:++uid,title:v[0],dur:v[1],meta:'1080×1920 · MP4',grad:grads[(i+2)%grads.length],desc:'Material video pentru '+name+'.',author:'agency',chat:starterChat()}));
-  const strats=[];
-  const invoices=[
-    {id:++uid,num:'#2026-08',period:'August 2026',amount:tarif+' RON',status:'due',note:'Scadentă 28 aug'},
-    {id:++uid,num:'#2026-07',period:'Iulie 2026',amount:tarif+' RON',status:'paid',note:'Plătită 05 iul'}
-  ];
-  const notes=[
-    {id:++uid,title:'Brief conținut',date:'15 aug 2026',author:'agency',body:'Direcții de conținut pentru '+name+':\n\n• 2-3 postări pe săptămână\n• focus pe ofertă și dovezi sociale'},
-    {id:++uid,title:'Idei de la client',date:'10 aug 2026',author:'client',body:'Câteva idei pe care aș vrea să le filmăm luna asta.'}
-  ];
-  const stats=[
-    {v:String(photos.length+videos.length),l:'Materiale livrate',d:'▲ recent',bg:'rgba(41,151,255,0.14)',ic:'#2997ff'},
-    {v:String(strats.length),l:'Campanii Ads active',d:'Meta · Google',bg:'rgba(255,69,58,0.14)',ic:'#ff453a'},
-    {v:'+'+(55+id*18)+'%',l:'Reach vs luna trecută',d:'▲ creștere',bg:'rgba(52,199,89,0.14)',ic:'#34c759'},
-    {v:'1',l:'Factură de plată',d:'Scadentă 28 aug',bg:'rgba(255,159,10,0.14)',ic:'#ff9f0a'}
-  ];
-  const activity=[
-    {c:'#2997ff',bg:'rgba(41,151,255,0.14)',t:'<b>Materiale noi</b> încărcate',m:'acum câteva zile',go:'photo'},
-    {c:'#ff9f0a',bg:'rgba(255,159,10,0.14)',t:'<b>Factură nouă</b> — August 2026',m:tarif+' RON · scadentă 28 aug',go:'invoices'}
-  ];
-  const steps=[
-    {av:'!',g:'linear-gradient(135deg,#ff453a,#ff9f0a)',t:'Achită factura August',m:'Scadentă în curând',go:'pay'}
-  ];
-  return {stats,activity,steps,photos,videos,strats,notes,invoices,domain};
-}
-const clients=[
-  {id:1,name:'Brandul Meu SRL',initials:'BM',plan:'Plan 90 de zile · activ',domain:'Produse handmade',email:'client@brandulmeu.ro',color:'#ff453a',grad:'linear-gradient(135deg,#ff453a,#ff9f0a)',data:S},
-  {id:2,name:'Cafeneaua Colț',initials:'CC',plan:'Abonament lunar · activ',domain:'HoReCa · cafenea',email:'contact@cafeneauacolt.ro',color:'#7c4dff',grad:'linear-gradient(135deg,#7c4dff,#2997ff)',data:genClient(2,'Cafeneaua Colț','HoReCa','2.500')},
-  {id:3,name:'FitZone Gym',initials:'FZ',plan:'Abonament lunar · activ',domain:'Sală de fitness',email:'office@fitzone.ro',color:'#34c759',grad:'linear-gradient(135deg,#34c759,#0a3a1c)',data:genClient(3,'FitZone Gym','Fitness','2.900')}
-];
-let activeClient=clients[0];
+const clients=[];
+let activeClient=clients[0]||{id:0,_fid:null,name:'',initials:'—',plan:'',domain:'',color:'#888',grad:'linear-gradient(135deg,#3a3a3a,#222)',data:{stats:[],activity:[],steps:[],photos:[],videos:[],strats:[],notes:[],invoices:[]}};
 
 /* ═══ AUTH / ROLE ═══ */
 let role='client';
@@ -1001,26 +921,18 @@ function renderStats(){
   }
 }
 function rowGo(v){go(v)}
-const AGENCY_FEED=[
-  {cid:2,c:'#7c4dff',bg:'rgba(124,77,255,0.14)',t:'a încărcat un <b>video nou</b>',m:'„Clip produs" · așteaptă review',view:'video'},
-  {cid:1,c:'#2997ff',bg:'rgba(41,151,255,0.14)',t:'a scris o <b>notiță</b>',m:'„Idei de la mine" · acum 3 ore',view:'notes'},
-  {cid:3,c:'#34c759',bg:'rgba(52,199,89,0.14)',t:'a încărcat <b>2 fotografii</b>',m:'pentru feed · ieri',view:'photo'},
-  {cid:1,c:'#ff453a',bg:'rgba(255,69,58,0.14)',t:'a lăsat o <b>observație</b>',m:'la „Foto_01_2026" · ieri',view:'photo'},
-  {cid:2,c:'#34c759',bg:'rgba(52,199,89,0.14)',t:'a <b>plătit factura</b>',m:'#2026-07 · 2.500 RON · acum 2 zile',view:'invoices'}
-];
+const AGENCY_FEED=[];
 function renderActivity(){
   const aList=document.getElementById('activityList'),sList=document.getElementById('stepsList');
   if(isAgency()){
-    aList.innerHTML=AGENCY_FEED.map(f=>{const c=clients.find(x=>x.id===f.cid);return `
+    aList.innerHTML=AGENCY_FEED.map(f=>{const c=clients.find(x=>x.id===f.cid);if(!c)return '';return `
      <div class="act-row clickable" onclick="openClient(${f.cid},'${f.view}')"><div class="act-ic" style="background:${c.grad};color:#fff;font-weight:700;font-size:0.72rem">${esc(c.initials)}</div>
-     <div class="act-b"><div class="t"><b>${esc(c.name)}</b> ${f.t}</div><div class="m">${esc(f.m)}</div></div><span class="act-go">›</span></div>`;}).join('');
+     <div class="act-b"><div class="t"><b>${esc(c.name)}</b> ${f.t}</div><div class="m">${esc(f.m)}</div></div><span class="act-go">›</span></div>`;}).join('')||'<div class="note-empty">Nicio activitate încă de la firmele tale.</div>';
     const steps=[];
     clients.forEach(c=>c.data.invoices.filter(i=>i.status==='due').forEach(inv=>steps.push({cid:c.id,g:'linear-gradient(135deg,#ff453a,#ff9f0a)',av:'!',t:c.name+' — factură neîncasată',m:inv.num+' · '+inv.amount+' · '+inv.note,view:'invoices'})));
-    steps.push({cid:2,g:'linear-gradient(135deg,#7c4dff,#2997ff)',av:'▶',t:'Aprobă videoclipul de la Cafeneaua Colț',m:'„Clip produs" în așteptare',view:'video'});
-    steps.push({cid:1,g:'linear-gradient(135deg,#2997ff,#7c4dff)',av:'✎',t:'Răspunde notiței de la Brandul Meu SRL',m:'„Idei de la mine"',view:'notes'});
     sList.innerHTML=steps.map(s=>`
      <div class="act-row clickable" style="align-items:center" onclick="openClient(${s.cid},'${s.view}')"><div class="sb-avatar" style="width:34px;height:34px;border-radius:9px;font-size:0.8rem;background:${s.g}">${s.av}</div>
-     <div class="act-b"><div class="t">${esc(s.t)}</div><div class="m">${esc(s.m)}</div></div><span class="act-go">›</span></div>`).join('');
+     <div class="act-b"><div class="t">${esc(s.t)}</div><div class="m">${esc(s.m)}</div></div><span class="act-go">›</span></div>`).join('')||'<div class="note-empty">Nimic care necesită atenția ta acum.</div>';
   }else{
     aList.innerHTML=S.activity.map(a=>`
      <div class="act-row${a.go?' clickable':''}" ${a.go?`onclick="rowGo('${a.go}')"`:''}><div class="act-ic" style="background:${a.bg};color:${a.c}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/></svg></div>
@@ -1101,10 +1013,7 @@ function renderPay(){
 
 /* ═══ NOTES ═══ */
 let curNote=null;
-const AGENCY_NOTES=[
-  {id:++uid,title:'To-do agenție',date:'19 aug 2026',author:'agency',body:'• Pregătește propunerea pentru un client nou\n• Reînnoiește abonamentele de stock\n• Idei campanie de toamnă pentru toate firmele'},
-  {id:++uid,title:'Idei generale de conținut',date:'14 aug 2026',author:'agency',body:'Formate care merg bine: before/after, BTS, testimoniale. De testat pe fiecare firmă.'}
-];
+const AGENCY_NOTES=[];
 function wideNotes(){return window.matchMedia('(min-width:821px)').matches}
 function snippet(b){return (b||'').replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/\s+/g,' ').trim()||'Fără text adițional'}
 function hexA(hex,a){const h=hex.replace('#','');const n=parseInt(h,16);return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;}
@@ -1407,20 +1316,7 @@ document.getElementById('neContent').addEventListener('keydown',neKeydown);
 
 /* ═══ CALENDAR ═══ */
 const CAL_TODAY='2026-08-19';
-const CAL_EVENTS=[
-  {date:'2026-08-19',cid:1,type:'session',title:'Sesiune 1-to-1'},
-  {date:'2026-08-19',cid:2,type:'post',title:'Postare reel programată'},
-  {date:'2026-08-20',cid:3,type:'shoot',title:'Filmare la sală'},
-  {date:'2026-08-22',cid:2,type:'delivery',title:'Livrare pachet foto'},
-  {date:'2026-08-25',cid:1,type:'invoice',title:'Scadență factură #2026-08 · 3.500 RON'},
-  {date:'2026-08-27',cid:1,type:'post',title:'Postare carusel produse'},
-  {date:'2026-08-28',cid:2,type:'invoice',title:'Scadență factură · 2.500 RON'},
-  {date:'2026-08-28',cid:3,type:'invoice',title:'Scadență factură · 2.900 RON'},
-  {date:'2026-08-31',cid:3,type:'shoot',title:'Filmare testimonial'},
-  {date:'2026-09-01',cid:3,type:'campaign',title:'Start campanie Meta'},
-  {date:'2026-09-03',cid:2,type:'session',title:'Sesiune strategie'},
-  {date:'2026-09-05',cid:1,type:'delivery',title:'Livrare 8 reels'}
-];
+const CAL_EVENTS=[];
 const MONTHS_RO=['Ianuarie','Februarie','Martie','Aprilie','Mai','Iunie','Iulie','August','Septembrie','Octombrie','Noiembrie','Decembrie'];
 const TYPE_META={invoice:['Factură','invoices'],session:['Sesiune','overview'],shoot:['Filmare','video'],post:['Postare','photo'],delivery:['Livrare','photo'],campaign:['Campanie','ads']};
 let calState={y:2026,m:7},calSel=null;
@@ -1506,13 +1402,18 @@ function firmToClient(f){
 }
 
 /* capture demo-feed original client indexes so we can remap after login */
-if(typeof AGENCY_FEED!=='undefined')AGENCY_FEED.forEach(f=>{ if(f._oc==null)f._oc=f.cid; });
-if(typeof CAL_EVENTS!=='undefined')CAL_EVENTS.forEach(e=>{ if(e._oc==null)e._oc=e.cid; });
-function remapDemoCids(){
-  const idx={1:0,2:1,3:2};
-  const pick=i=>clients[i]?clients[i].id:(clients[0]?clients[0].id:null);
-  if(typeof AGENCY_FEED!=='undefined')AGENCY_FEED.forEach(f=>{ f.cid=pick(idx[f._oc]!=null?idx[f._oc]:0); });
-  if(typeof CAL_EVENTS!=='undefined')CAL_EVENTS.forEach(e=>{ e.cid=pick(idx[e._oc]!=null?idx[e._oc]:0); });
+function buildAgencyFeed(){
+  if(typeof AGENCY_FEED==='undefined')return;
+  AGENCY_FEED.length=0;
+  if(!isAgency())return;
+  const feed=[];
+  clients.forEach(c=>{
+    c.data.notes.slice(0,2).forEach(n=>feed.push({cid:c.id,view:'notes',t:'a scris o <b>notiță</b>',m:'„'+(n.title||'Notiță')+'" · '+n.date}));
+    c.data.videos.slice(0,1).forEach(m=>feed.push({cid:c.id,view:'video',t:'a încărcat <b>un video</b>',m:'„'+(m.title||'')+'"'}));
+    c.data.photos.slice(0,1).forEach(m=>feed.push({cid:c.id,view:'photo',t:'a încărcat <b>o fotografie</b>',m:'„'+(m.title||'')+'"'}));
+    c.data.invoices.filter(i=>i.status==='paid').slice(0,1).forEach(inv=>feed.push({cid:c.id,view:'invoices',t:'a <b>plătit factura</b>',m:inv.num+' · '+inv.amount}));
+  });
+  feed.slice(0,8).forEach(f=>AGENCY_FEED.push(f));
 }
 /* guard against missing client */
 calClient=function(cid){ return clients.find(c=>c.id===cid)||clients[0]||{color:'#888',grad:'#888',name:'',initials:''}; };
@@ -1530,7 +1431,7 @@ async function loadAll(){
   clients.length=0;
   const byFirm={};
   (firms||[]).forEach(f=>{ const c=firmToClient(f); clients.push(c); byFirm[f.id]=c; });
-  if(!clients.length) throw new Error('nicio firmă');
+  if(!clients.length && role!=='agency') throw new Error('nicio firmă asociată contului');
 
   const [mats,notes,strats,invs]=await Promise.all([
     sb.from('materials').select('*').order('created_at',{ascending:false}),
@@ -1579,8 +1480,9 @@ async function loadAll(){
     d.steps=dueInv?[{av:'!',g:'linear-gradient(135deg,#ff453a,#ff9f0a)',t:'Achită factura '+dueInv.num,m:dueInv.amount,go:'pay'}]:[];
   });
 
-  activeClient=clients[0]; S=activeClient.data; curNote=null;
-  remapDemoCids();
+  activeClient = clients[0] || { id:0, _fid:null, name:'Fără firme încă', initials:'—', plan:'Adaugă prima firmă', domain:'', color:'#888', grad:'linear-gradient(135deg,#3a3a3a,#222)', data:{stats:[],activity:[],steps:[],photos:[],videos:[],strats:[],notes:[],invoices:[]} };
+  S=activeClient.data; curNote=null;
+  buildAgencyFeed();
   // signed URLs for stored materials (best-effort, async)
   signMaterials();
 }
@@ -1766,6 +1668,103 @@ delItem=async function(coll,id){
   if(coll==='strats')await sb.from('strategies').delete().eq('id',item._uid);
   else if(coll==='invoices')await sb.from('invoices').delete().eq('id',item._uid);
   else if(coll==='photos'||coll==='videos'){ if(item._path)await sb.storage.from('materials').remove([item._path]); await sb.from('materials').delete().eq('id',item._uid); }
+};
+
+/* ---- NEW FIRM + CLIENT ACCOUNT (agency) ---- */
+const FIRM_COLORS=['#ff453a','#7c4dff','#34c759','#2997ff','#ff9f0a','#ff2d92','#64d2ff'];
+viewAdd.clients={fn:'openNewFirm',t:'Adaugă firmă',agency:true};
+
+const _origRenderClients=renderClients;
+renderClients=function(){
+  _origRenderClients();
+  if(!isAgency())return;
+  const grid=document.getElementById('clientsGrid'); if(!grid)return;
+  if(!clients.length){ grid.innerHTML='<div class="note-empty" style="grid-column:1/-1">Nicio firmă încă. Adaugă prima firmă ca să începi.</div>'; }
+  const add=document.createElement('div');
+  add.className='client-card add-firm';
+  add.style.cssText='display:flex;align-items:center;justify-content:center;gap:0.6rem;border:1.5px dashed var(--line);cursor:pointer;color:var(--gray);min-height:120px';
+  add.innerHTML='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span style="font-weight:600">Adaugă firmă</span>';
+  add.onclick=openNewFirm;
+  grid.appendChild(add);
+};
+
+function buildFirmModal(){
+  if(document.getElementById('newFirmModal'))return;
+  const el=document.createElement('div');
+  el.className='overlay'; el.id='newFirmModal';
+  el.innerHTML=
+   '<div class="modal modal-upload">'
+   +'<button class="x" onclick="closeNewFirm()">×</button>'
+   +'<div class="modal-eyebrow">Firmă nouă</div>'
+   +'<h3>Adaugă o firmă</h3>'
+   +'<div id="nfForm">'
+   +'<div class="field"><label>Nume firmă</label><input id="nfName" placeholder="Ex: Florăria Ana SRL"></div>'
+   +'<div class="field"><label>Culoare</label><div id="nfColors" style="display:flex;gap:0.5rem;flex-wrap:wrap"></div></div>'
+   +'<div class="field"><label>Plan <span class="lbl-soft">— opțional</span></label><input id="nfPlan" placeholder="Ex: Abonament lunar" value="Abonament lunar"></div>'
+   +'<div class="field"><label>Email client <span class="lbl-soft">— pentru contul lui de acces</span></label><input id="nfEmail" type="email" placeholder="client@firma.ro"></div>'
+   +'<div class="field"><label>Parolă <span class="lbl-soft">— lasă gol ca să generez una</span></label><input id="nfPass" placeholder="(generată automat)"></div>'
+   +'<div class="up-actions"><button class="btn btn-ghost" onclick="closeNewFirm()">Anulează</button><button class="btn btn-primary" id="nfSubmit" onclick="submitNewFirm()">Creează firma</button></div>'
+   +'</div>'
+   +'<div id="nfResult" style="display:none"></div>'
+   +'</div>';
+  document.body.appendChild(el);
+  el.addEventListener('click',e=>{ if(e.target.id==='newFirmModal')closeNewFirm(); });
+}
+let nfColor=FIRM_COLORS[0];
+window.openNewFirm=function(){
+  buildFirmModal();
+  document.getElementById('nfForm').style.display='';
+  document.getElementById('nfResult').style.display='none';
+  document.getElementById('nfName').value='';
+  document.getElementById('nfEmail').value='';
+  document.getElementById('nfPass').value='';
+  document.getElementById('nfPlan').value='Abonament lunar';
+  nfColor=FIRM_COLORS[clients.length%FIRM_COLORS.length];
+  document.getElementById('nfColors').innerHTML=FIRM_COLORS.map(c=>'<span data-c="'+c+'" style="width:26px;height:26px;border-radius:50%;background:'+c+';cursor:pointer;border:3px solid '+(c===nfColor?'#fff':'transparent')+'"></span>').join('');
+  document.querySelectorAll('#nfColors span').forEach(s=>s.onclick=()=>{ nfColor=s.dataset.c; document.querySelectorAll('#nfColors span').forEach(x=>x.style.borderColor=x.dataset.c===nfColor?'#fff':'transparent'); });
+  document.getElementById('newFirmModal').classList.add('open');
+};
+window.closeNewFirm=function(){ const m=document.getElementById('newFirmModal'); if(m)m.classList.remove('open'); };
+window.submitNewFirm=async function(){
+  const name=(document.getElementById('nfName').value||'').trim();
+  if(!name){ toast('Scrie numele firmei'); return; }
+  const email=(document.getElementById('nfEmail').value||'').trim();
+  const pass=(document.getElementById('nfPass').value||'').trim();
+  const plan=(document.getElementById('nfPlan').value||'').trim();
+  const btn=document.getElementById('nfSubmit'); btn.disabled=true; btn.textContent='Se creează…';
+  let out;
+  try{
+    const { data:{ session } } = await sb.auth.getSession();
+    const token=session&&session.access_token;
+    const res=await fetch(SB_URL+'/functions/v1/create-firm-client',{ method:'POST', headers:{ 'Content-Type':'application/json', 'apikey':SB_KEY, 'Authorization':'Bearer '+token }, body:JSON.stringify({ name, color:nfColor, plan_label:plan, email, password:pass }) });
+    out=await res.json();
+  }catch(e){ btn.disabled=false; btn.textContent='Creează firma'; toast('Rețea: '+(e&&e.message||e)); return; }
+  btn.disabled=false; btn.textContent='Creează firma';
+  if(out.error && !out.firm){ toast(out.error); return; }
+  await loadAll(); applyRole();
+  // select the new firm
+  const nc=clients.find(c=>c._fid===(out.firm&&out.firm.id));
+  if(nc){ setActiveClient(nc.id,'overview',true); }
+  // show result (credentials)
+  document.getElementById('nfForm').style.display='none';
+  const r=document.getElementById('nfResult'); r.style.display='';
+  if(out.account){
+    r.innerHTML='<div class="note" style="margin-top:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg><div>Firma <b>'+esc(name)+'</b> și contul de client au fost create. Trimite-i aceste date de acces:</div></div>'
+      +'<div class="field"><label>Email</label><input id="nfOutEmail" readonly value="'+esc(out.account.email)+'"></div>'
+      +'<div class="field"><label>Parolă</label><input id="nfOutPass" readonly value="'+esc(out.account.password)+'"></div>'
+      +'<div class="up-actions"><button class="btn btn-ghost" onclick="copyFirmCreds()">Copiază datele</button><button class="btn btn-primary" onclick="closeNewFirm()">Gata</button></div>';
+    toast('Firmă și cont create');
+  } else {
+    r.innerHTML='<div class="note" style="margin-top:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg><div>Firma <b>'+esc(name)+'</b> a fost creată'+(out.error?(' — dar contul a eșuat: '+esc(out.error)):' (fără cont de client)')+'.</div></div>'
+      +'<div class="up-actions"><button class="btn btn-primary" onclick="closeNewFirm()">Gata</button></div>';
+    toast('Firmă creată');
+  }
+};
+window.copyFirmCreds=function(){
+  const e=document.getElementById('nfOutEmail').value, p=document.getElementById('nfOutPass').value;
+  const txt='Portal Local to Live\nLink: (portalul tău)\nEmail: '+e+'\nParolă: '+p;
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(()=>toast('Copiat'),()=>toast('Nu am putut copia')); }
+  else toast('Copiază manual din câmpuri');
 };
 
 /* prefill login for convenience */
