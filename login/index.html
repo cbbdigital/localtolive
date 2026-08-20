@@ -324,10 +324,11 @@ body:not(.edit) .mcard .mbody .mdesc:empty{display:none}
 .ne-title:empty::before{content:attr(data-ph);color:#5f5f66}
 .ne-content{font-size:1.05rem;line-height:1.7;color:#e0e0e4;outline:none;white-space:pre-wrap;min-height:40vh}
 .ne-content:empty::before{content:attr(data-ph);color:#5f5f66}
-/* Agency (Ciprian) notes → Apple Notes yellow. Client notes → white (default). */
-.ne-content[data-author="agency"],
-.ne-title[data-author="agency"]{color:#FFD60A}
-.note-row[data-author="agency"] .rt{color:#FFD60A}
+/* Agency (Ciprian) text → Apple Notes yellow. Client text → white (default). */
+.ne-content span.au-ag { color: #FFD60A; }
+.ne-content span.au-cl { color: #f5f5f7; }
+.ne-title[data-author="agency"] { color: #FFD60A; }
+.note-row[data-author="agency"] .rt { color: #FFD60A; }
 .ne-content .todo{position:relative;padding-left:34px;margin:0.35rem 0;min-height:1.5em}
 .ne-content .todo .cb{position:absolute;left:0;top:0.12em;width:22px;height:22px;border:2px solid #e6b800;border-radius:50%;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:.15s;user-select:none}
 .ne-content .todo .cb svg{width:13px;height:13px;opacity:0;color:#fff}
@@ -997,10 +998,28 @@ function renderStrats(){
      <div>${h3}${plat}</div></div>
      ${desc}
      <div class="meta"><div>Status<b>${ag?statusSelect(s.id,s.status):`<span class="badge ${st[0]}"><span class="bd"></span>${st[1]}</span>`}</b></div><div>Actualizat${up}</div></div>
-     <div class="strat-actions"><button class="btn btn-ghost btn-sm" style="flex:1"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l4 4v14H5V4z"/><path d="M14 3v5h5"/></svg> ${ag?'Încarcă PDF':'Deschide PDF'}</button></div></div>`;
+     <div class="strat-actions"><button class="btn btn-ghost btn-sm" style="flex:1" onclick="event.stopPropagation();pickStratPdf(${s.id})"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l4 4v14H5V4z"/><path d="M14 3v5h5"/></svg> ${s.pdfName?'Deschide PDF':'Încarcă PDF'}</button></div></div>`;
   }).join('');
 }
 function setStrat(id,k,v){const s=S.strats.find(x=>x.id===id);if(s)s[k]=v}
+
+let pendingStratPdf=null;
+function pickStratPdf(id){
+  const s=S.strats.find(x=>x.id===id);
+  if(!s)return;
+  if(s.pdfUrl){ window.open(s.pdfUrl,'_blank'); return; }
+  pendingStratPdf=id;
+  let inp=document.getElementById('stratPdfInput');
+  if(!inp){ inp=document.createElement('input'); inp.type='file'; inp.id='stratPdfInput'; inp.accept='.pdf,application/pdf'; inp.style.display='none'; inp.onchange=()=>attachStratPdf(inp.files); document.body.appendChild(inp); }
+  inp.value=''; inp.click();
+}
+function attachStratPdf(files){
+  const f=files[0]; if(!f||pendingStratPdf==null)return;
+  const s=S.strats.find(x=>x.id===pendingStratPdf);
+  if(s){ s.pdfName=f.name; s.pdfUrl=URL.createObjectURL(f); }
+  document.getElementById('stratPdfInput').value='';
+  pendingStratPdf=null; renderStrats(); toast('PDF strategie încărcat');
+}
 function statusSelect(id,cur){
   return `<select class="mini-select" onchange="setStratStatus(${id},this.value)">
    <option value="live"${cur==='live'?' selected':''}>Activă</option>
@@ -1136,24 +1155,32 @@ function addAttach(files){
   neSave('body',c.innerHTML);document.getElementById('neAttach').value='';toast('Atașament adăugat');
 }
 function addNote(){
-  if(isAgency()){openNoteTarget();return;}
-  const d=new Date().toLocaleDateString('ro-RO',{day:'2-digit',month:'short',year:'numeric'});const id=++uid;S.notes.unshift({id,title:'Notiță nouă',date:d,body:'',author:role});renderNotes();openNote(id);focusNoteTitle();
+  const d=new Date().toLocaleDateString('ro-RO',{day:'2-digit',month:'short',year:'numeric'});
+  const id=++uid;
+  const note={id,title:'Notiță nouă',date:d,body:'',author:role};
+  if(isAgency()){ openNoteTarget(note); return; }
+  S.notes.unshift(note);
+  renderNotes();openNote(id);focusNoteTitle();
 }
 function focusNoteTitle(){const h=document.getElementById('neTitle');if(h){h.focus();document.getSelection().selectAllChildren(h);}}
-function openNoteTarget(){
+function openNoteTarget(pendingNote){
+  window._pendingNote=pendingNote;
   document.getElementById('noteTargetPicker').innerHTML=
-    `<div class="firm-chip" onclick="createNote('personal')"><div class="fa" style="background:linear-gradient(135deg,#ff9f0a,#ff453a)">★</div><div class="fn">Personal <span class="lbl-soft">— doar pentru tine</span></div><div class="fck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></div></div>`
-    +clients.map(c=>`<div class="firm-chip" onclick="createNote(${c.id})"><div class="fa" style="background:${c.grad}">${esc(c.initials)}</div><div class="fn">${esc(c.name)}</div><div class="fck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></div></div>`).join('');
+    clients.map(c=>`<div class="firm-chip" onclick="createNote(${c.id})"><div class="fa" style="background:${c.grad}">${esc(c.initials)}</div><div class="fn">${esc(c.name)}</div><div class="fck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></div></div>`).join('');
   document.getElementById('noteTargetModal').classList.add('open');
 }
 function closeNoteTarget(){document.getElementById('noteTargetModal').classList.remove('open')}
-function createNote(target){
-  const d=new Date().toLocaleDateString('ro-RO',{day:'2-digit',month:'short',year:'numeric'});const id=++uid;
-  const note={id,title:'Notiță nouă',date:d,body:'',author:'agency'};
-  if(target==='personal'){AGENCY_NOTES.unshift(note);}
-  else{const c=clients.find(x=>x.id===target);if(c)c.data.notes.unshift(note);}
-  closeNoteTarget();curNote=id;renderNotes();openNote(id);
-  toast(target==='personal'?'Notiță personală nouă':'Notiță adăugată în contul firmei');focusNoteTitle();
+function createNote(targetClientId){
+  const note=window._pendingNote;
+  if(!note)return;
+  const c=clients.find(x=>x.id===targetClientId);
+  if(c){ c.data.notes.unshift(note); }
+  closeNoteTarget();
+  curNote=note.id;
+  // Switch to that client
+  if(c && c.id !== activeClient.id){ openClient(c.id,'notes'); return; }
+  renderNotes();openNote(note.id);
+  toast('Notiță adăugată în contul firmei '+((c&&c.name)||''));focusNoteTitle();
 }
 function delNote(id){const f=findNote(id);if(f){const i=f.arr.indexOf(f.n);if(i>=0)f.arr.splice(i,1);}if(curNote===id){curNote=null;closeNote();}renderNotes();toast('Notiță ștearsă')}
 function noteBodyForPdf(html){
@@ -1366,6 +1393,37 @@ function neKeydown(e){
 }
 document.getElementById('neContent').addEventListener('keydown',neKeydown);
 
+// Per-edit author coloring: wrap new text in colored span based on current user role
+document.getElementById('neContent').addEventListener('beforeinput', function(e) {
+  if(!curNote) return;
+  if(e.inputType !== 'insertText' && e.inputType !== 'insertCompositionText') return;
+  const cls = isAgency() ? 'au-ag' : 'au-cl';
+  const sel = window.getSelection();
+  if(!sel || !sel.rangeCount) return;
+  e.preventDefault();
+  const text = e.data || '';
+  // Check if we're already inside a span of the same class
+  let node = sel.anchorNode;
+  if(node && node.nodeType === Node.TEXT_NODE) node = node.parentNode;
+  if(node && node.classList && node.classList.contains(cls)) {
+    // Append inside existing span
+    document.execCommand('insertText', false, text);
+    return;
+  }
+  // Create new span
+  const span = document.createElement('span');
+  span.className = cls;
+  span.textContent = text;
+  const range = sel.getRangeAt(0);
+  range.deleteContents();
+  range.insertNode(span);
+  range.setStartAfter(span);
+  range.collapse(true);
+  sel.removeAllRanges();
+  sel.addRange(range);
+  neSave('body', document.getElementById('neContent').innerHTML);
+});
+
 /* ═══ CALENDAR ═══ */
 const CAL_TODAY='2026-08-19';
 const CAL_EVENTS=[];
@@ -1432,7 +1490,7 @@ const SB_URL='https://kowvuvieclbpyoszswjo.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtvd3Z1dmllY2xicHlvc3pzd2pvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNDI1MjgsImV4cCI6MjEwMjcxODUyOH0.JlzPHP-9OjGLTDLWi2UtbWBGHpmoBnnRhdfTBgOzoIw';
 let sb=null, CURRENT_UID=null, CURRENT_ROLE='client';
 
-function initSB(){ if(sb)return sb; sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false,detectSessionInUrl:false}}); return sb; }
+function initSB(){ if(sb)return sb; sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,detectSessionInUrl:false,autoRefreshToken:true}}); return sb; }
 
 /* ---- helpers ---- */
 function fmtDate(iso){ try{ return new Date(iso).toLocaleDateString('ro-RO',{day:'2-digit',month:'short',year:'numeric'}); }catch(e){ return ''; } }
@@ -1565,20 +1623,25 @@ logout=async function(){ try{ if(sb)await sb.auth.signOut(); }catch(e){}
 };
 
 /* ---- NOTES ---- */
-addNote=function(){ if(isAgency()){ openNoteTarget(); return; } createNote(activeClient.id); };
-createNote=async function(target){
-  const isPersonal=(target==='personal');
-  const firm=isPersonal?null:clients.find(x=>x.id===target);
-  const author=isAgency()?'agency':'client';
+addNote=function(){
+  if(isAgency()){ openNoteTarget({id:++uid,title:'Notiță nouă',date:fmtDate(new Date().toISOString()),body:'',author:'agency'}); return; }
   const localId=++uid;
-  const note={ id:localId, _uid:null, title:'Notiță nouă', date:fmtDate(new Date().toISOString()), body:'', author:author };
-  if(isPersonal)AGENCY_NOTES.unshift(note); else if(firm)firm.data.notes.unshift(note);
-  closeNoteTarget(); curNote=localId; renderNotes(); openNote(localId); focusNoteTitle();
-  toast(isPersonal?'Notiță personală nouă':'Notiță adăugată');
-  const payload={ title:'Notiță nouă', body:'', author:author, is_personal:isPersonal, firm_id:isPersonal?null:(firm?firm._fid:null), owner_id:CURRENT_UID };
-  const { data, error } = await sb.from('notes').insert(payload).select().single();
-  if(error){ toast('Eroare la salvarea notiței'); return; }
-  note._uid=data.id;
+  const note={id:localId,_uid:null,title:'Notiță nouă',date:fmtDate(new Date().toISOString()),body:'',author:'client'};
+  S.notes.unshift(note); renderNotes(); openNote(localId); focusNoteTitle();
+  sb.from('notes').insert({title:'Notiță nouă',body:'',author:'client',firm_id:activeClient._fid,owner_id:CURRENT_UID}).select().single()
+    .then(({data,error})=>{ if(!error&&data) note._uid=data.id; });
+};
+createNote=async function(targetClientId){
+  const note=window._pendingNote; if(!note)return;
+  const firm=clients.find(x=>x.id===targetClientId);
+  if(firm){ firm.data.notes.unshift(note); }
+  closeNoteTarget();
+  toast('Notiță adăugată'+(firm?' în contul firmei '+firm.name:''));
+  if(firm && firm.id !== activeClient.id){ openClient(firm.id,'notes'); return; }
+  curNote=note.id; renderNotes(); openNote(note.id); focusNoteTitle();
+  const payload={title:'Notiță nouă',body:'',author:'agency',firm_id:firm?firm._fid:null,owner_id:CURRENT_UID};
+  const {data,error}=await sb.from('notes').insert(payload).select().single();
+  if(!error&&data) note._uid=data.id;
 };
 neSave=function(k,v){
   const f=findNote(curNote); if(!f)return; f.n[k]=v; const n=f.n; if(!n._uid)return;
