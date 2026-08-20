@@ -355,6 +355,15 @@ nav {
   color: #fff !important;
   padding: 0.35rem 1rem;
   border-radius: 980px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.4;
+  font: inherit;
+  border: 1px solid transparent;
+  box-sizing: border-box;
+  text-decoration: none;
+  cursor: pointer;
 }
 .pill:hover { background: #0077ed; }
 .pill-outline {
@@ -1332,10 +1341,8 @@ footer { border-top: 1px solid rgba(255,255,255,0.08); padding: 3.5rem 0 2.5rem;
   <div class="nav-inner">
     <div class="brand"><span class="b-local">Local</span><span class="b-to">to</span><span class="b-live"><span class="live-dot"></span>Live</span></div>
     <div class="nav-right">
-      <a href="#servicii">Servicii</a>
-      <a href="#program">Program</a>
-      <a href="#pret">Preț</a>
       <button type="button" class="pill pill-outline" id="openContactCard">Contact</button>
+      <a href="/login/" class="pill pill-outline">Login</a>
       <a href="#contact" class="pill">Începe</a>
     </div>
   </div>
