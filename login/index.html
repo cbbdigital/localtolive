@@ -1062,10 +1062,7 @@ function renderPay(){
 
 /* ═══ NOTES ═══ */
 let curNote=null;
-const AGENCY_NOTES=[
-  {id:++uid,title:'To-do agenție',date:'19 aug 2026',author:'agency',body:'• Pregătește propunerea pentru un client nou\n• Reînnoiește abonamentele de stock\n• Idei campanie de toamnă pentru toate firmele'},
-  {id:++uid,title:'Idei generale de conținut',date:'14 aug 2026',author:'agency',body:'Formate care merg bine: before/after, BTS, testimoniale. De testat pe fiecare firmă.'}
-];
+const AGENCY_NOTES=[];
 function wideNotes(){return window.matchMedia('(min-width:821px)').matches}
 function snippet(b){return (b||'').replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/\s+/g,' ').trim()||'Fără text adițional'}
 function hexA(hex,a){const h=hex.replace('#','');const n=parseInt(h,16);return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;}
@@ -1811,6 +1808,22 @@ delItem=async function(coll,id){
 };
 
 /* prefill login for convenience */
+// Auto-restore session on page load
+(async()=>{
+  try{
+    const scl=initSB();
+    scl.auth.onAuthStateChange(async(event,session)=>{
+      if((event==='SIGNED_IN'||event==='INITIAL_SESSION')&&session){
+        const loginView=document.getElementById('loginView');
+        const appView=document.getElementById('appView');
+        if(loginView&&loginView.style.display!=='none'||appView&&appView.style.display==='none'){
+          try{ await loadAll(); }catch(e){ console.warn('auto-login failed',e); }
+        }
+      }
+    });
+  }catch(e){ console.warn('auto-login init failed',e); }
+})();
+
 window.addEventListener('DOMContentLoaded',()=>{
   const e=document.getElementById('loginEmail'), p=document.getElementById('loginPass');
   if(e&&!e.value)e.value='office@localtolive.ro';
