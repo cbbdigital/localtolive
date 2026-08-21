@@ -1875,11 +1875,7 @@ dlMedia=async function(){
 
 /* ---- generic delete (strats / invoices / materials) ---- */
 delItem=async function(coll,id){
-  // Confirm for photos/videos
-  if(coll==='photos'||coll==='videos'){
-    const label=coll==='photos'?'fotografia':'videoclipul';
-    if(!confirm('Ești sigur că vrei să ștergi '+label+'? Acțiunea nu poate fi anulată.'))return;
-  }
+  // No confirm dialog - just delete directly
   const item=(S[coll]||[]).find(x=>x.id===id);
   S[coll]=S[coll].filter(x=>x.id!==id);
   ({photos:renderPhotos,videos:renderVideos,strats:renderStrats,invoices:renderInvoices}[coll])();
