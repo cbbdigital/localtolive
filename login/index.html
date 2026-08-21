@@ -1624,10 +1624,20 @@ logout=async function(){ try{ if(sb)await sb.auth.signOut(); }catch(e){}
 
 /* ---- NOTES ---- */
 addNote=function(){
-  if(isAgency()){ openNoteTarget({id:++uid,title:'Notiță nouă',date:fmtDate(new Date().toISOString()),body:'',author:'agency'}); return; }
-  const localId=++uid;
-  const note={id:localId,_uid:null,title:'Notiță nouă',date:fmtDate(new Date().toISOString()),body:'',author:'client'};
-  S.notes.unshift(note); renderNotes(); openNote(localId); focusNoteTitle();
+  const note={id:++uid,_uid:null,title:'Notiță nouă',date:fmtDate(new Date().toISOString()),body:'',author:'agency'};
+  if(isAgency()){
+    if(clients.length===1){
+      // auto-assign to the only client
+      window._pendingNote=note;
+      createNote(clients[0].id);
+    } else {
+      openNoteTarget(note);
+    }
+    return;
+  }
+  // client adds note to their own account
+  note.author='client';
+  S.notes.unshift(note); renderNotes(); openNote(note.id); focusNoteTitle();
   sb.from('notes').insert({title:'Notiță nouă',body:'',author:'client',firm_id:activeClient._fid,owner_id:CURRENT_UID}).select().single()
     .then(({data,error})=>{ if(!error&&data) note._uid=data.id; });
 };
