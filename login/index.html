@@ -1738,7 +1738,7 @@ delNote=async function(id){
   const i=f.arr.indexOf(f.n); if(i>=0)f.arr.splice(i,1);
   if(curNote===id){ curNote=null; closeNote(); }
   renderNotes(); toast('Notiță mutată în Coș — recuperabilă 30 de zile');
-  if(dbId)await sb.from('notes').update({deleted_at:new Date().toISOString()}).eq('id',dbId);
+  if(dbId)await sb.from('notes').delete().eq('id',dbId);
 };
 
 /* ---- STRATEGIES ---- */
@@ -1875,15 +1875,19 @@ dlMedia=async function(){
 
 /* ---- generic delete (strats / invoices / materials) ---- */
 delItem=async function(coll,id){
-  // No confirm dialog - just delete directly
   const item=(S[coll]||[]).find(x=>x.id===id);
   S[coll]=S[coll].filter(x=>x.id!==id);
   ({photos:renderPhotos,videos:renderVideos,strats:renderStrats,invoices:renderInvoices}[coll])();
   counts(); toast('Șters');
-  if(!item||!item._uid)return;
-  if(coll==='strats')await sb.from('strategies').delete().eq('id',item._uid);
-  else if(coll==='invoices')await sb.from('invoices').delete().eq('id',item._uid);
-  else if(coll==='photos'||coll==='videos'){ if(item._path)await sb.storage.from('materials').remove([item._path]); await sb.from('materials').delete().eq('id',item._uid); }
+  if(!item)return;
+  if(coll==='strats'&&item._uid)await sb.from('strategies').delete().eq('id',item._uid);
+  else if(coll==='invoices'&&item._uid)await sb.from('invoices').delete().eq('id',item._uid);
+  else if(coll==='photos'||coll==='videos'){
+    if(item._path)await sb.storage.from('materials').remove([item._path]);
+    if(item._uid)await sb.from('materials').delete().eq('id',item._uid);
+    // Fallback: dacă nu are _uid, încearcă după title + firm_id
+    else if(activeClient._fid)await sb.from('materials').delete().eq('firm_id',activeClient._fid).eq('title',item.title||'');
+  }
 };
 
 /* prefill login for convenience */
