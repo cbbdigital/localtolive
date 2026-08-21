@@ -1812,15 +1812,16 @@ delItem=async function(coll,id){
 (async()=>{
   try{
     const scl=initSB();
-    scl.auth.onAuthStateChange(async(event,session)=>{
-      if((event==='SIGNED_IN'||event==='INITIAL_SESSION')&&session){
-        const loginView=document.getElementById('loginView');
-        const appView=document.getElementById('appView');
-        if(loginView&&loginView.style.display!=='none'||appView&&appView.style.display==='none'){
-          try{ await loadAll(); }catch(e){ console.warn('auto-login failed',e); }
-        }
-      }
-    });
+    const {data:{session}}=await scl.auth.getSession();
+    if(session){
+      try{
+        await loadAll();
+        document.getElementById('loginView').style.display='none';
+        document.getElementById('appView').style.display='block';
+        window.scrollTo(0,0);
+        applyRole(); go('overview');
+      }catch(e){ console.warn('auto-login loadAll failed',e); }
+    }
   }catch(e){ console.warn('auto-login init failed',e); }
 })();
 
