@@ -592,6 +592,8 @@ tbody tr:hover{background:rgba(255,255,255,0.02)}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 3h9l4 4v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5M8.5 13h7M8.5 16.5h7"/></svg>Facturi <span class="count" id="cInv">0</span></button>
         <button class="nav-item" data-view="pay" onclick="go('pay')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 9.5h19"/><path d="M6 15h4"/></svg>Plăți</button>
+        <button class="nav-item" data-view="trash" onclick="go('trash')" style="margin-top:0.5rem;opacity:0.6">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 6h18M8 6V4h8v2M5 6l1 14h12l1-14"/><path d="M10 11v6M14 11v6"/></svg>Coș <span class="count" id="cTrash">0</span></button>
       </nav>
       <div class="sb-foot">
         <button class="logout" onclick="logout()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M15 17l5-5-5-5M20 12H9M9 21H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3"/></svg>Deconectare</button>
@@ -732,6 +734,10 @@ tbody tr:hover{background:rgba(255,255,255,0.02)}
           </div>
           <div class="sec-title">Istoric plăți</div>
           <div class="tbl-wrap"><table><thead><tr><th>Dată</th><th>Factură</th><th>Sumă</th><th>Status</th></tr></thead><tbody id="payBody"></tbody></table></div>
+        </section>
+        <section class="view" id="v-trash">
+          <p class="page-lead">Notițele șterse sunt păstrate 30 de zile, apoi se șterg definitiv.</p>
+          <div id="trashList" style="display:flex;flex-direction:column;gap:0.7rem;margin-top:1rem"></div>
         </section>
       </div>
     </main>
@@ -894,7 +900,7 @@ function login(){const email=(document.getElementById('loginEmail').value||'').t
 function logout(){role='client';activeClient=clients[0];S=clients[0].data;document.body.classList.remove('agency');document.getElementById('appView').style.display='none';document.getElementById('loginView').style.display='flex'}
 
 /* ═══ NAV ═══ */
-const titles={clients:'Clienții mei',overview:'Prezentare',photo:'Materiale Foto',video:'Materiale Video',ads:'Strategii Ads',notes:'Notițe',invoices:'Facturi',pay:'Plăți'};
+const titles={clients:'Clienții mei',overview:'Prezentare',photo:'Materiale Foto',video:'Materiale Video',ads:'Strategii Ads',notes:'Notițe',invoices:'Facturi',pay:'Plăți',trash:'Coș notițe'};
 function go(v){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.view===v));
   document.querySelectorAll('.view').forEach(s=>s.classList.remove('active'));
@@ -902,6 +908,7 @@ function go(v){
   document.getElementById('pageTitle').textContent=titles[v];
   curView=v;updateHdrAdd();
   if(v==='clients')renderClients();
+  if(v==='trash')renderTrash();
   if(!navGuard){navReturn=null;showBack(false);}
   toggleSb(false);window.scrollTo(0,0);
 }
@@ -931,6 +938,14 @@ function counts(){
   document.getElementById('cInv').textContent=due;
   document.getElementById('cNotes').textContent=(typeof noteItems==='function'?noteItems().length:S.notes.length);
   const cc=document.getElementById('cClients');if(cc)cc.textContent=clients.length;
+  try{
+    const trashKey='ltl_trash_notes';
+    const trashItems=JSON.parse(localStorage.getItem(trashKey)||'[]');
+    const cutoff=Date.now()-30*24*60*60*1000;
+    const trashCount=trashItems.filter(n=>n._deletedAt>cutoff).length;
+    const cTrash=document.getElementById('cTrash');
+    if(cTrash)cTrash.textContent=trashCount||'';
+  }catch(e){}
 }
 function amt2num(a){return parseInt(String(a).replace(/[^\d]/g,''),10)||0}
 function renderStats(){
@@ -951,7 +966,43 @@ function renderStats(){
     document.getElementById('stepsTitle').textContent='Următorii pași';
   }
 }
-function rowGo(v){go(v)}
+function renderTrash(){
+  const trashKey='ltl_trash_notes';
+  let items=[];
+  try{ items=JSON.parse(localStorage.getItem(trashKey)||'[]'); }catch(e){}
+  const cutoff=Date.now()-30*24*60*60*1000;
+  items=items.filter(n=>n._deletedAt>cutoff);
+  const el=document.getElementById('trashList');
+  if(!el)return;
+  if(!items.length){ el.innerHTML='<div style="padding:2rem;text-align:center;color:var(--gray);font-size:0.88rem">Coșul este gol.</div>'; return; }
+  el.innerHTML=items.map((n,i)=>{
+    const daysLeft=Math.ceil((n._deletedAt+30*24*60*60*1000-Date.now())/(24*60*60*1000));
+    return `<div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:1.1rem 1.2rem;display:flex;justify-content:space-between;align-items:flex-start;gap:1rem">
+      <div>
+        <div style="font-weight:600;color:${n.author==='agency'?'#FFD60A':'var(--white)'};margin-bottom:0.3rem">${esc(n.title||'Fără titlu')}</div>
+        <div style="font-size:0.8rem;color:var(--gray)">${esc(n.date)} · Șters în ${daysLeft} ${daysLeft===1?'zi':'zile'}</div>
+      </div>
+      <button onclick="restoreNote(${i})" style="background:rgba(41,151,255,0.15);color:#2997ff;border:1px solid rgba(41,151,255,0.3);padding:0.45rem 0.9rem;border-radius:8px;font-family:inherit;font-size:0.82rem;font-weight:600;cursor:pointer;white-space:nowrap">Recuperează</button>
+    </div>`;
+  }).join('');
+  const cTrash=document.getElementById('cTrash');
+  if(cTrash)cTrash.textContent=items.length;
+}
+function restoreNote(idx){
+  const trashKey='ltl_trash_notes';
+  let items=[];
+  try{ items=JSON.parse(localStorage.getItem(trashKey)||'[]'); }catch(e){}
+  const note=items[idx];
+  if(!note)return;
+  items.splice(idx,1);
+  try{ localStorage.setItem(trashKey,JSON.stringify(items)); }catch(e){}
+  // Add back to current client's notes
+  const restored={id:++uid,title:note.title,date:note.date,body:note.body,author:note.author,_uid:null};
+  S.notes.unshift(restored);
+  renderNotes();
+  renderTrash();
+  toast('Notiță recuperată');
+}
 const AGENCY_FEED=[];
 function renderActivity(){
   const aList=document.getElementById('activityList'),sList=document.getElementById('stepsList');
@@ -1657,10 +1708,18 @@ neSave=function(k,v){
 };
 delNote=async function(id){
   const f=findNote(id); if(!f)return; const dbId=f.n._uid;
+  // Move to trash instead of permanent delete
+  try{
+    const trashKey='ltl_trash_notes';
+    const existing=JSON.parse(localStorage.getItem(trashKey)||'[]');
+    existing.push(Object.assign({},f.n,{_deletedAt:Date.now()}));
+    const cutoff=Date.now()-30*24*60*60*1000;
+    localStorage.setItem(trashKey,JSON.stringify(existing.filter(n=>n._deletedAt>cutoff)));
+  }catch(e){}
   const i=f.arr.indexOf(f.n); if(i>=0)f.arr.splice(i,1);
   if(curNote===id){ curNote=null; closeNote(); }
-  renderNotes(); toast('Notiță ștearsă');
-  if(dbId)await sb.from('notes').delete().eq('id',dbId);
+  renderNotes(); toast('Notiță mutată în Coș — recuperabilă 30 de zile');
+  if(dbId)await sb.from('notes').update({deleted_at:new Date().toISOString()}).eq('id',dbId);
 };
 
 /* ---- STRATEGIES ---- */
@@ -1797,6 +1856,11 @@ dlMedia=async function(){
 
 /* ---- generic delete (strats / invoices / materials) ---- */
 delItem=async function(coll,id){
+  // Confirm for photos/videos
+  if(coll==='photos'||coll==='videos'){
+    const label=coll==='photos'?'fotografia':'videoclipul';
+    if(!confirm('Ești sigur că vrei să ștergi '+label+'? Acțiunea nu poate fi anulată.'))return;
+  }
   const item=(S[coll]||[]).find(x=>x.id===id);
   S[coll]=S[coll].filter(x=>x.id!==id);
   ({photos:renderPhotos,videos:renderVideos,strats:renderStrats,invoices:renderInvoices}[coll])();
