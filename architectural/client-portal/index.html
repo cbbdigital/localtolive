@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal Client · Ciprian Badic</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+:root{--ink:#1a1a1a;--muted:#9a9a9a;--line:#e7e7e7;--bg:#ffffff;--slot:#ececea;--sidebar:260px;--pad:clamp(24px,4vw,56px)}
+html,body{margin:0}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit}
+
+/* ---------- sidebar (matches landing page) ---------- */
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sidebar);padding:var(--pad) 40px;display:flex;flex-direction:column;border-right:1px solid var(--line)}
+.brand .name{font-weight:600;letter-spacing:.18em;font-size:15px;line-height:1.2}
+.brand .name small{display:block;font-weight:400;letter-spacing:.13em;font-size:9px;color:var(--muted);margin-top:3px}
+nav.main{margin-top:56px;display:flex;flex-direction:column;gap:2px}
+nav.main a{display:block;padding:9px 0;font-size:13.5px;color:#666;cursor:pointer;letter-spacing:.01em}
+nav.main a.active{color:var(--ink);font-weight:500}
+.sb-foot{margin-top:auto;font-size:11px;color:var(--muted)}
+
+main{margin-left:var(--sidebar);padding:var(--pad) 64px;max-width:1180px}
+.view{display:none}
+.view.active{display:block}
+
+/* ---------- mobile: off-canvas sidebar ---------- */
+.menu-toggle{display:none;position:fixed;top:16px;left:16px;z-index:41;width:40px;height:40px;align-items:center;justify-content:center;background:#fff;border:1px solid var(--line);border-radius:50%}
+.menu-toggle span,.menu-toggle span::before,.menu-toggle span::after{content:'';display:block;width:16px;height:1.5px;background:var(--ink);position:relative;transition:transform .18s,opacity .18s}
+.menu-toggle span::before{position:absolute;top:-5px}
+.menu-toggle span::after{position:absolute;top:5px}
+.sb-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:39}
+.sb-backdrop.show{display:block}
+.h-title{font-size:clamp(26px,2.6vw,34px);font-weight:600;letter-spacing:-.01em;margin:0 0 10px}
+.lead{font-size:14.5px;color:#5a5a5a;max-width:640px;font-weight:300;line-height:1.65;margin:0 0 32px}
+
+/* ---------- buttons ---------- */
+.btn-dark{background:var(--ink);color:#fff;border:none;padding:13px 28px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;transition:opacity .18s}
+.btn-dark:hover{opacity:.82}
+.btn-outline{background:transparent;color:var(--ink);border:1px solid var(--ink);padding:12px 26px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;display:inline-flex;align-items:center}
+.btn-outline:hover{background:var(--ink);color:#fff}
+
+/* ---------- galerie admin ---------- */
+.admin-bar{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--line)}
+.field-inline label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.field-inline input{padding:11px 13px;border:1px solid var(--line);background:#fafafa;font-size:14px;min-width:220px}
+.upload-btn{position:relative;overflow:hidden}
+.note{font-size:12px;color:var(--muted);font-weight:300;max-width:520px;margin:-14px 0 26px}
+
+.g-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px}
+.g-tile{position:relative;aspect-ratio:3/2;background-size:cover;background-position:center;overflow:hidden;user-select:none}
+.g-remove{position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;border:none;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center}
+.g-empty{padding:60px 0;text-align:center;color:var(--muted);font-size:13px;border:1px dashed var(--line)}
+
+.field-inline select{padding:11px 13px;border:1px solid var(--line);background:#fafafa;font-size:14px;min-width:220px}
+.new-client-form{border:1px solid var(--line);padding:22px;margin:0 0 26px;max-width:520px}
+.new-client-form .row2{margin-bottom:16px}
+#linkBar code{background:#f4f4f2;padding:5px 10px;border-radius:4px;font-size:12.5px}
+.btn-sm{padding:7px 16px;font-size:11px}
+
+/* ---------- oferte trimise ---------- */
+.sec-title{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.offers-sent{margin-bottom:40px}
+.offers-table-wrap{border:1px solid var(--line);overflow-x:auto}
+.offers-table{width:100%;border-collapse:collapse;font-size:13.5px}
+.offers-table th{text-align:left;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500;padding:12px 16px;border-bottom:1px solid var(--line);white-space:nowrap}
+.offers-table td{padding:12px 16px;border-bottom:1px solid var(--line);white-space:nowrap}
+.offers-table tr:last-child td{border-bottom:none}
+.offers-table td.total{font-weight:600}
+.offers-empty{color:var(--muted);text-align:center;padding:24px 16px!important}
+.offers-reload{background:none;border:none;color:var(--muted);font-size:12px;text-decoration:underline;cursor:pointer;padding:0}
+
+/* ---------- ofertă ---------- */
+.offer-grid{display:grid;grid-template-columns:1fr 320px;gap:56px;align-items:start}
+.field{margin-bottom:18px}
+.field label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.field input,.field select,.field textarea{width:100%;padding:12px 14px;border:1px solid var(--line);background:#fafafa;color:var(--ink);font-size:14px;resize:vertical}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:#bdbdbd}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.offer-preview{position:sticky;top:var(--pad)}
+.op-card{border:1px solid var(--line);padding:26px}
+.op-label{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:16px 0 6px}
+.op-label:first-child{margin-top:0}
+.op-line{display:flex;justify-content:space-between;font-size:14px;padding-bottom:12px;border-bottom:1px solid var(--line);margin-bottom:2px}
+.op-total{display:flex;justify-content:space-between;align-items:baseline;margin-top:18px;padding-top:16px;border-top:1px solid var(--ink)}
+.op-total span:first-child{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.op-total span:last-child{font-size:22px;font-weight:600}
+
+/* ---------- hidden pdf template ---------- */
+#pdfRoot{position:fixed;left:-9999px;top:0;width:794px}
+.pdf-page{width:794px;min-height:1123px;padding:56px 60px;position:relative;font-family:'Inter',sans-serif;color:#101010;background:#fff}
+.pdf-head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #101010;padding-bottom:14px;margin-bottom:30px}
+.pdf-brand-name{font-weight:700;font-size:17px;letter-spacing:.02em}
+.pdf-brand-sub{font-size:10.5px;color:#666;letter-spacing:.06em;margin-top:2px}
+.pdf-meta{font-size:11.5px;color:#333;text-align:right;line-height:1.5}
+.pdf-h1{font-size:22px;font-weight:700;margin:0 0 26px}
+.pdf-h2{font-size:15px;font-weight:700;margin:26px 0 10px}
+.pdf-cols{display:flex;gap:36px}
+.pdf-cols>div{flex:1}
+.pdf-sec-title{font-size:12.5px;font-weight:600;border-bottom:1px solid #ccc;padding-bottom:8px;margin-bottom:14px}
+.pdf-p{font-size:12px;line-height:1.7;margin:0 0 10px;color:#222}
+.pdf-list{margin:0 0 4px;padding-left:16px;font-size:12px;line-height:2}
+.pdf-calc-line{font-size:12px;margin-bottom:8px}
+.pdf-calc-line b{font-size:12.5px}
+.pdf-total{margin-top:18px;font-size:14px;font-weight:700}
+.pdf-art{font-size:12.5px;font-weight:700;margin:20px 0 8px}
+.pdf-sign{display:flex;justify-content:space-between;margin-top:70px}
+.pdf-sign div{width:46%}
+.pdf-sign b{display:block;font-size:12px;margin-bottom:4px}
+.pdf-sign .line{font-size:12px;color:#333;margin-top:36px}
+
+/* ---------- mobile overrides (kept last so they win the cascade) ---------- */
+@media(max-width:860px){
+  .menu-toggle{display:flex}
+  .sidebar{transform:translateX(-100%);transition:transform .25s ease;z-index:40;background:#fff;width:240px;box-shadow:0 0 40px rgba(0,0,0,.08)}
+  .sidebar.open{transform:translateX(0)}
+  main{margin-left:0;padding:88px 20px 48px;max-width:100%}
+  .admin-bar{gap:12px}
+  .field-inline{width:100%}
+  .field-inline input{min-width:0;width:100%}
+  .offer-grid{display:block}
+  .offer-grid form{margin-bottom:32px}
+  .offer-preview{position:static;width:100%}
+  .row2{grid-template-columns:1fr}
+  .g-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
+}
+</style>
+</head>
+<body>
+
+<button class="menu-toggle" id="menuToggle" aria-label="Meniu"><span></span></button>
+<div class="sb-backdrop" id="sbBackdrop"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="brand"><span class="name">CIPRIAN BADIC<small>PORTAL CLIENȚI</small></span></div>
+  <nav class="main">
+    <a data-view="galerie" class="active">Galerie client</a>
+    <a data-view="oferta">Ofertă &amp; contract</a>
+  </nav>
+  <div class="sb-foot">Fotografie de arhitectură</div>
+</aside>
+
+<main>
+
+  <!-- ===================== GALERIE ===================== -->
+  <div class="view active" id="v-galerie">
+    <h1 class="h-title">Galerie client</h1>
+    <p class="lead">Alege un client existent sau creează unul nou. Pozele urcate ajung direct în Supabase (redimensionate, filigranate, fără opțiune de descărcare pentru client) și linkul e valabil imediat.</p>
+
+    <div class="admin-bar">
+      <div class="field-inline">
+        <label>Client</label>
+        <select id="clientSelect"><option value="">— alege client —</option></select>
+      </div>
+      <button class="btn-outline" id="newClientBtn">+ Client nou</button>
+      <label class="btn-outline upload-btn" id="uploadLabel" style="display:none">Adaugă poze
+        <input type="file" id="galInput" accept="image/*" multiple hidden>
+      </label>
+    </div>
+
+    <div class="new-client-form" id="newClientForm" style="display:none">
+      <div class="row2">
+        <div class="field"><label>Nume client</label><input id="ncClient" placeholder="Ex: Cristian Jardine"></div>
+        <div class="field"><label>Nume proiect (opțional)</label><input id="ncProject" placeholder="Ex: Jardine Hills"></div>
+      </div>
+      <button class="btn-dark btn-sm" id="createClientBtn">Creează client</button>
+    </div>
+
+    <div id="linkBar" style="display:none">
+      <p class="note" style="margin:0 0 20px">Link pentru client: <code id="clientLink"></code>
+        <button class="btn-outline btn-sm" id="copyLinkBtn">Copiază</button>
+        <a id="openLinkBtn" target="_blank" class="btn-outline btn-sm">Deschide</a>
+      </p>
+    </div>
+
+    <p class="note" id="protNote" style="display:none">Blocarea unui screenshot 100% nu e posibilă tehnic în niciun browser — filigranul, blur-ul la ieșirea din fereastră și lipsa click-dreapta/drag sunt măsuri de descurajare, nu criptare.</p>
+
+    <div class="g-grid" id="gGrid"><div class="g-empty" id="gEmpty">Alege sau creează un client.</div></div>
+  </div>
+
+  <!-- ===================== OFERTĂ ===================== -->
+  <div class="view" id="v-oferta">
+    <h1 class="h-title">Ofertă &amp; contract</h1>
+    <p class="lead">Completează datele clientului și modelul de ofertă. Generezi un PDF cu oferta personalizată, urmată de contractul standard (drepturi de autor, licențiere, semnături).</p>
+
+    <div class="offers-sent">
+      <div class="sec-title">Oferte trimise</div>
+      <div class="offers-table-wrap">
+        <table class="offers-table">
+          <thead><tr><th>Data</th><th>Client</th><th>Proiect</th><th>Tip</th><th>Total</th><th></th></tr></thead>
+          <tbody id="offersBody"><tr><td colspan="6" class="offers-empty">Se încarcă…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="offer-grid">
+      <form id="offerForm" onsubmit="return false">
+        <div class="field"><label>Nume client / companie</label><input id="ofClient" placeholder="Ex: Cristian Jardine"></div>
+        <div class="row2">
+          <div class="field"><label>Website (opțional)</label><input id="ofWeb" placeholder="Ex: jardinehills.ro"></div>
+          <div class="field"><label>Nume proiect</label><input id="ofProject" placeholder="Ex: Jardine Hills"></div>
+        </div>
+        <div class="field"><label>Tip ofertă</label>
+          <select id="ofType">
+            <option>Booking.com</option>
+            <option>Airbnb</option>
+            <option>Imobiliar</option>
+            <option>Editorial</option>
+            <option>Hospitality</option>
+            <option>Personal / Portofoliu</option>
+          </select>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Ore estimate la locație</label><input type="number" id="ofHours" placeholder="Ex: 8" min="0" step="0.5"></div>
+          <div class="field"><label>Preț / oră (RON)</label><input type="number" id="ofRateHour" placeholder="Ex: 150" min="0"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Nr. imagini incluse</label><input type="number" id="ofImages" placeholder="Ex: 45" min="0"></div>
+          <div class="field"><label>Preț / imagine (RON)</label><input type="number" id="ofRateImg" placeholder="Ex: 50" min="0"></div>
+        </div>
+        <div class="field"><label>Structură cadre (una pe linie)</label><textarea id="ofStructure" rows="6" placeholder="Ex:
+8 × Casa 1
+10 × Exterior
+4 × Twilight (timp de seară)"></textarea></div>
+        <div class="row2">
+          <div class="field"><label>Nr. contract (opțional)</label><input id="ofNr" placeholder="—"></div>
+          <div class="field"><label>Data</label><input id="ofDate" type="date"></div>
+        </div>
+      </form>
+
+      <aside class="offer-preview">
+        <div class="op-card">
+          <div class="op-label">Sesiune foto la locație</div>
+          <div class="op-line"><span id="pvHoursLine">0 ore × 0 RON</span><span id="pvHoursTotal">0 RON</span></div>
+          <div class="op-label">Editare &amp; licențiere imagini</div>
+          <div class="op-line"><span id="pvImgLine">0 × 0 RON</span><span id="pvImgTotal">0 RON</span></div>
+          <div class="op-total"><span>Total</span><span id="pvTotal">0 RON</span></div>
+        </div>
+        <button class="btn-dark" id="genPdfBtn" style="width:100%;margin-top:20px">Descarcă PDF</button>
+      </aside>
+    </div>
+  </div>
+
+</main>
+
+<!-- hidden template used only when generating the PDF -->
+<div id="pdfRoot"></div>
+
+<script>
+/* ---------------- nav ---------------- */
+document.querySelectorAll('nav.main a').forEach(a=>{
+  a.addEventListener('click',()=>{
+    document.querySelectorAll('nav.main a').forEach(x=>x.classList.remove('active'));
+    a.classList.add('active');
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById('v-'+a.dataset.view).classList.add('active');
+    closeMenu();
+  });
+});
+
+/* ---------------- mobile menu ---------------- */
+const sidebar = document.getElementById('sidebar');
+const sbBackdrop = document.getElementById('sbBackdrop');
+function openMenu(){ sidebar.classList.add('open'); sbBackdrop.classList.add('show'); }
+function closeMenu(){ sidebar.classList.remove('open'); sbBackdrop.classList.remove('show'); }
+document.getElementById('menuToggle').addEventListener('click', ()=>{
+  sidebar.classList.contains('open') ? closeMenu() : openMenu();
+});
+sbBackdrop.addEventListener('click', closeMenu);
+
+/* ---------------- supabase ---------------- */
+const SUPABASE_URL = 'https://kowvuvieclbpyoszswjo.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtvd3Z1dmllY2xicHlvc3pzd2pvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNDI1MjgsImV4cCI6MjEwMjcxODUyOH0.JlzPHP-9OjGLTDLWi2UtbWBGHpmoBnnRhdfTBgOzoIw';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const BUCKET = 'photocrm-photos';
+const CLIENT_ORIGIN = 'https://localtolive.ro/architectural';
+
+let clients = [];
+let currentClient = null; // {id, slug, client_name, project_name}
+
+function uuid(){
+  if(window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c=>{
+    const r = Math.random()*16|0, v = c==='x'?r:(r&0x3|0x8);
+    return v.toString(16);
+  });
+}
+
+function slugify(s){
+  return s.toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'') || 'client';
+}
+
+async function uniqueSlug(base){
+  let slug = base, n = 2;
+  while(true){
+    const { data } = await sb.from('photocrm_clients').select('id').eq('slug', slug).maybeSingle();
+    if(!data) return slug;
+    slug = `${base}-${n++}`;
+  }
+}
+
+async function loadClients(){
+  const { data, error } = await sb.from('photocrm_clients').select('*').order('created_at', {ascending:false});
+  clients = (!error && data) ? data : [];
+  const sel = document.getElementById('clientSelect');
+  sel.innerHTML = '<option value="">— alege client —</option>' +
+    clients.map(c=>`<option value="${c.id}">${escHtml(c.client_name)}${c.project_name ? ' — '+escHtml(c.project_name) : ''}</option>`).join('');
+}
+function escHtml(s){ return (s||'').replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+document.getElementById('clientSelect').addEventListener('change', function(){
+  currentClient = clients.find(c=>c.id===this.value) || null;
+  onClientChange();
+});
+
+document.getElementById('newClientBtn').addEventListener('click', ()=>{
+  const f = document.getElementById('newClientForm');
+  f.style.display = f.style.display==='none' ? 'block' : 'none';
+});
+
+document.getElementById('createClientBtn').addEventListener('click', async ()=>{
+  const name = document.getElementById('ncClient').value.trim();
+  const project = document.getElementById('ncProject').value.trim();
+  if(!name){ alert('Completează numele clientului.'); return; }
+  const slug = await uniqueSlug(slugify(project || name));
+  const { data, error } = await sb.from('photocrm_clients')
+    .insert({ client_name:name, project_name:project||null, slug })
+    .select().single();
+  if(error){ alert('Eroare la creare client: '+error.message); return; }
+  document.getElementById('ncClient').value='';
+  document.getElementById('ncProject').value='';
+  document.getElementById('newClientForm').style.display='none';
+  await loadClients();
+  document.getElementById('clientSelect').value = data.id;
+  currentClient = data;
+  onClientChange();
+});
+
+function onClientChange(){
+  const upload = document.getElementById('uploadLabel');
+  const linkBar = document.getElementById('linkBar');
+  const protNote = document.getElementById('protNote');
+  if(!currentClient){
+    upload.style.display='none'; linkBar.style.display='none'; protNote.style.display='none';
+    renderGrid([]);
+    return;
+  }
+  upload.style.display='inline-flex';
+  linkBar.style.display='block';
+  protNote.style.display='block';
+  const url = `${CLIENT_ORIGIN}/client/?c=${encodeURIComponent(currentClient.slug)}`;
+  document.getElementById('clientLink').textContent = url;
+  document.getElementById('openLinkBtn').href = url;
+  loadPhotos();
+}
+
+document.getElementById('copyLinkBtn').addEventListener('click', ()=>{
+  navigator.clipboard.writeText(document.getElementById('clientLink').textContent);
+  const btn = document.getElementById('copyLinkBtn');
+  const old = btn.textContent; btn.textContent='Copiat'; setTimeout(()=>btn.textContent=old, 1200);
+});
+
+/* ---------------- galerie: upload + downscale ---------------- */
+function downscale(file, maxDim=1600, quality=0.82){
+  return new Promise(resolve=>{
+    const reader = new FileReader();
+    reader.onload = e=>{
+      const img = new Image();
+      img.onload = ()=>{
+        let {width,height} = img;
+        if(width>height){ if(width>maxDim){height=Math.round(height*maxDim/width); width=maxDim;} }
+        else{ if(height>maxDim){width=Math.round(width*maxDim/height); height=maxDim;} }
+        const canvas=document.createElement('canvas');
+        canvas.width=width; canvas.height=height;
+        canvas.getContext('2d').drawImage(img,0,0,width,height);
+        canvas.toBlob(blob=>resolve(blob), 'image/jpeg', quality);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+document.getElementById('galInput').addEventListener('change', async function(){
+  if(!currentClient) return;
+  const files = [...this.files];
+  this.value='';
+  const { data: existing } = await sb.from('photocrm_photos').select('position').eq('client_id', currentClient.id).order('position', {ascending:false}).limit(1);
+  let pos = existing && existing.length ? existing[0].position+1 : 0;
+  for(const f of files){
+    const blob = await downscale(f);
+    const path = `${currentClient.slug}/${uuid()}.jpg`;
+    const { error: upErr } = await sb.storage.from(BUCKET).upload(path, blob, {contentType:'image/jpeg'});
+    if(upErr){ alert('Eroare la upload: '+upErr.message); continue; }
+    await sb.from('photocrm_photos').insert({ client_id:currentClient.id, storage_path:path, position:pos++ });
+  }
+  loadPhotos();
+});
+
+async function loadPhotos(){
+  if(!currentClient){ renderGrid([]); return; }
+  const { data, error } = await sb.from('photocrm_photos')
+    .select('id, storage_path')
+    .eq('client_id', currentClient.id)
+    .order('position', {ascending:true});
+  if(error){ renderGrid([]); return; }
+  const items = data.map(p=>({ id:p.id, path:p.storage_path, url: sb.storage.from(BUCKET).getPublicUrl(p.storage_path).data.publicUrl }));
+  renderGrid(items);
+}
+
+function renderGrid(items){
+  const grid = document.getElementById('gGrid');
+  if(!items.length){ grid.innerHTML = `<div class="g-empty" id="gEmpty">${currentClient ? 'Nicio poză încărcată încă.' : 'Alege sau creează un client.'}</div>`; return; }
+  grid.innerHTML = items.map(p=>`
+    <div class="g-tile" style="background-image:url('${p.url}')" oncontextmenu="return false">
+      <button class="g-remove" onclick="removePhoto('${p.id}','${p.path}')" title="Șterge">×</button>
+    </div>`).join('');
+}
+
+async function removePhoto(id, path){
+  await sb.storage.from(BUCKET).remove([path]);
+  await sb.from('photocrm_photos').delete().eq('id', id);
+  loadPhotos();
+}
+
+/* content-protection on admin thumbnails: no context menu / drag */
+document.addEventListener('contextmenu', e=>{ if(e.target.closest('.g-tile')) e.preventDefault(); });
+document.addEventListener('dragstart', e=>{ if(e.target.closest('.g-tile')) e.preventDefault(); });
+
+loadClients();
+
+/* ---------------- ofertă: live calc ---------------- */
+const $ = id=>document.getElementById(id);
+document.getElementById('ofDate').value = new Date().toISOString().slice(0,10);
+
+function fmtRON(n){ return n.toLocaleString('ro-RO', {maximumFractionDigits:0})+' RON'; }
+
+function recalc(){
+  const hours = parseFloat($('ofHours').value)||0;
+  const rateHour = parseFloat($('ofRateHour').value)||0;
+  const images = parseFloat($('ofImages').value)||0;
+  const rateImg = parseFloat($('ofRateImg').value)||0;
+  const totalHours = hours*rateHour;
+  const totalImg = images*rateImg;
+  $('pvHoursLine').textContent = `${hours} ore × ${rateHour} RON`;
+  $('pvHoursTotal').textContent = fmtRON(totalHours);
+  $('pvImgLine').textContent = `${images} × ${rateImg} RON`;
+  $('pvImgTotal').textContent = fmtRON(totalImg);
+  $('pvTotal').textContent = fmtRON(totalHours+totalImg);
+}
+['ofHours','ofRateHour','ofImages','ofRateImg'].forEach(id=>$(id).addEventListener('input', recalc));
+recalc();
+
+/* ---------------- PDF generation ---------------- */
+function esc(s){ return (s||'').replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+function buildPdf(){
+  const client = $('ofClient').value.trim() || 'Client';
+  const web = $('ofWeb').value.trim();
+  const project = $('ofProject').value.trim() || client;
+  const type = $('ofType').value;
+  const hours = parseFloat($('ofHours').value)||0;
+  const rateHour = parseFloat($('ofRateHour').value)||0;
+  const images = parseFloat($('ofImages').value)||0;
+  const rateImg = parseFloat($('ofRateImg').value)||0;
+  const totalHours = hours*rateHour;
+  const totalImg = images*rateImg;
+  const total = totalHours+totalImg;
+  const nr = $('ofNr').value.trim() || '—';
+  const dateVal = $('ofDate').value ? new Date($('ofDate').value) : new Date();
+  const dateStr = dateVal.toLocaleDateString('ro-RO');
+  const structureLines = $('ofStructure').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  const beneficiarLine = web ? `${esc(client)} — ${esc(web)}` : esc(client);
+
+  const head = `<div class="pdf-head">
+    <div><div class="pdf-brand-name">CIPRIAN BADIC</div><div class="pdf-brand-sub">FOTOGRAFIE DE ARHITECTURĂ</div></div>
+    <div class="pdf-meta">Contract Nr. ${esc(nr)}<br>Data: ${dateStr}</div>
+  </div>`;
+
+  const page1 = `<div class="pdf-page">
+    ${head}
+    <div class="pdf-h1">Oferta ${esc(project)}</div>
+    <div class="pdf-cols">
+      <div>
+        <div class="pdf-sec-title">Detalii despre proiect și structura cadrelor</div>
+        <p class="pdf-p"><b>Tip ofertă:</b> ${esc(type)}</p>
+        <p class="pdf-p"><b>Timp estimat la locație:</b> ${hours} ore</p>
+        <p class="pdf-p"><b>Structură recomandată cadre (${images} imagini):</b></p>
+        <ul class="pdf-list">${structureLines.map(l=>`<li>${esc(l)}</li>`).join('')}</ul>
+        <p class="pdf-p" style="margin-top:14px;color:#666">Structura poate să difere în funcție de dorințele clientului sau nevoia spațiului.</p>
+      </div>
+      <div>
+        <div class="pdf-sec-title">Calcul tarifar și cost total</div>
+        <p class="pdf-p">1. Sesiune Foto la Locație:</p>
+        <p class="pdf-calc-line">${hours} ore × ${rateHour} RON / oră = <b>${fmtRON(totalHours)}</b></p>
+        <p class="pdf-p">2. Editare &amp; Licențiere Imagini:</p>
+        <p class="pdf-calc-line">${images} cadre × ${rateImg} RON / imagine = <b>${fmtRON(totalImg)}</b></p>
+        <div class="pdf-total">Total: ${fmtRON(total)}</div>
+      </div>
+    </div>
+  </div>`;
+
+  const page2 = `<div class="pdf-page">
+    ${head}
+    <div class="pdf-h1">CONTRACT DE PRESTĂRI SERVICII FOTOGRAFICE</div>
+    <div class="pdf-art">ART. 1. PĂRȚILE CONTRACTANTE</div>
+    <p class="pdf-p">Prezentul contract se încheie între:</p>
+    <p class="pdf-p">1. Prestator: SC CBB DIGITAL SRL, cu sediul în București, Sector 6, Spl. Independenței 313B, C9, 81, CUI 52562184, reprezentat de Ciprian Bădic, serie CI. RK538579, în calitate de Administrator,</p>
+    <p class="pdf-p">și</p>
+    <p class="pdf-p">2. Beneficiar: ${beneficiarLine}</p>
+    <div class="pdf-art">ART. 2. OBIECTUL CONTRACTULUI</div>
+    <p class="pdf-p">Obiectul contractului îl reprezintă prestarea de servicii de fotografie de arhitectură și design interior de către Prestator pentru locația/proiectul Beneficiarului, prelucrarea imaginilor și cedarea drepturilor de utilizare comercială neexclusivă conform clauzelor de mai jos.</p>
+    <div class="pdf-art">ART. 3. PREȚ ȘI STRUCTURĂ TARIFARĂ</div>
+    <p class="pdf-p">Remunerația este structurată în două componente distincte și cumulate:</p>
+    <ul class="pdf-list">
+      <li><b>Taxa de Sesiune Foto (Timp la locație): ${rateHour} RON / oră.</b> Acoperă prezența la locație, setarea echipamentului de iluminat și consultanța de specialitate. Timpul minim facturabil pentru o deplasare este de 2 ore (${rateHour*2} RON).</li>
+      <li><b>Taxa de Editare și Licențiere (Per imagine): ${rateImg} RON / imagine selectată.</b> Beneficiarul va selecta imaginile brute dintr-o galerie de vizualizare protejată. Beneficiarul se obligă să selecteze un minimum de 5 cadre pentru fiecare oră de fotografiere tarifată. Imaginile suplimentare peste acest prag vor fi facturate cu ${rateImg} RON / bucată.</li>
+    </ul>
+    <div class="pdf-art">ART. 4. DREPTURI ȘI OBLIGAȚII</div>
+    <p class="pdf-p" style="font-weight:600;margin-bottom:4px">Obligațiile Prestatorului:</p>
+    <ul class="pdf-list">
+      <li>Să realizeze fotografiile la un standard profesional ridicat.</li>
+      <li>Să livreze imaginile finale, editate profesional, în termen de 3-7 zile lucrătoare de la confirmarea selecției de către Beneficiar.</li>
+    </ul>
+  </div>`;
+
+  const page3 = `<div class="pdf-page">
+    ${head}
+    <p class="pdf-p" style="font-weight:600;margin-bottom:4px">Obligațiile Beneficiarului:</p>
+    <ul class="pdf-list">
+      <li>Să asigure accesul neîngrădit la locație și pregătirea spațiului (curățenie generală, aprinderea luminilor la nevoie).</li>
+      <li>Să achite contravaloarea serviciilor prestate în termenele agreate.</li>
+    </ul>
+    <div class="pdf-art">ART. 5. DREPTURI DE AUTOR ȘI LICENȚIERE</div>
+    <p class="pdf-p"><b>Drepturile de Autor:</b> Prestatorul păstrează drepturile de autor depline asupra tuturor fotografiilor realizate (inclusiv cele neselectate de Beneficiar), rezervându-și dreptul de a le utiliza exclusiv în scopul promovării propriului portofoliu (website, social media, concursuri).</p>
+    <p class="pdf-p"><b>Licența de Utilizare Comercială:</b> Prin achitarea Taxei de Editare și Licențiere (${rateImg} RON/imagine), Beneficiarul obține o licență neexclusivă, pe termen nelimitat, pentru utilizarea cadrelor respective în scopuri comerciale directe (website, platforme de rezervări tip Booking/Airbnb, social media, cataloage, PR). Această licență este netransmisibilă terților fără acordul scris al Prestatorului și achitarea unei taxe de sublicențiere.</p>
+    <div class="pdf-art">ART. 6. DISPOZIȚII FINALE ȘI FORȚĂ MAJORĂ</div>
+    <p class="pdf-p">Forța majoră apără de răspundere partea care o invocă, în condițiile legii. Orice modificare a prezentului contract se va face exclusiv prin act adițional semnat de ambele părți. Litigiile se vor soluționa pe cale amiabilă, sau, în caz contrar, de către instanțele judecătorești competente din România.</p>
+    <div class="pdf-sign">
+      <div><b>PRESTATOR</b>CIPRIAN BADIC, CBB DIGITAL SRL<div class="line">Semnătură: .................................</div></div>
+      <div><b>BENEFICIAR</b>Nume: ${esc(client)}<div class="line">Semnătură: .................................</div></div>
+    </div>
+  </div>`;
+
+  document.getElementById('pdfRoot').innerHTML = page1+page2+page3;
+}
+
+/* ---------------- oferte trimise ---------------- */
+async function loadOffers(){
+  const tbody = document.getElementById('offersBody');
+  const { data, error } = await sb.from('photocrm_offers').select('*').order('created_at', {ascending:false}).limit(50);
+  if(error || !data || !data.length){
+    tbody.innerHTML = '<tr><td colspan="6" class="offers-empty">Nicio ofertă trimisă încă.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map(o=>{
+    const d = o.offer_date ? new Date(o.offer_date).toLocaleDateString('ro-RO') : '—';
+    return `<tr>
+      <td>${d}</td>
+      <td>${escHtml(o.client_name)}</td>
+      <td>${escHtml(o.project_name||'—')}</td>
+      <td>${escHtml(o.offer_type||'—')}</td>
+      <td class="total">${fmtRON(Number(o.total)||0)}</td>
+      <td><button class="offers-reload" onclick='reloadOffer(${JSON.stringify(o).replace(/'/g,"&#39;")})'>reia</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function reloadOffer(o){
+  $('ofClient').value = o.client_name||'';
+  $('ofWeb').value = o.website||'';
+  $('ofProject').value = o.project_name||'';
+  $('ofType').value = o.offer_type||'Booking.com';
+  $('ofHours').value = o.hours||'';
+  $('ofRateHour').value = o.rate_hour||'';
+  $('ofImages').value = o.images||'';
+  $('ofRateImg').value = o.rate_img||'';
+  $('ofNr').value = o.contract_nr||'';
+  if(o.offer_date) $('ofDate').value = o.offer_date;
+  recalc();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+async function saveOffer(){
+  const payload = {
+    client_name: $('ofClient').value.trim() || 'Client',
+    website: $('ofWeb').value.trim() || null,
+    project_name: $('ofProject').value.trim() || null,
+    offer_type: $('ofType').value,
+    hours: parseFloat($('ofHours').value)||0,
+    rate_hour: parseFloat($('ofRateHour').value)||0,
+    images: parseFloat($('ofImages').value)||0,
+    rate_img: parseFloat($('ofRateImg').value)||0,
+    total: (parseFloat($('ofHours').value)||0)*(parseFloat($('ofRateHour').value)||0) + (parseFloat($('ofImages').value)||0)*(parseFloat($('ofRateImg').value)||0),
+    contract_nr: $('ofNr').value.trim() || null,
+    offer_date: $('ofDate').value || new Date().toISOString().slice(0,10)
+  };
+  await sb.from('photocrm_offers').insert(payload);
+  loadOffers();
+}
+
+document.getElementById('genPdfBtn').addEventListener('click', ()=>{
+  buildPdf();
+  saveOffer();
+  const client = $('ofClient').value.trim() || 'client';
+  const opt = {
+    margin:0,
+    filename:`Oferta_${client.replace(/\s+/g,'_')}.pdf`,
+    image:{type:'jpeg', quality:0.98},
+    html2canvas:{scale:2, useCORS:true},
+    jsPDF:{unit:'px', format:[794,1123], orientation:'portrait'},
+    pagebreak:{mode:['css'], after:'.pdf-page'}
+  };
+  html2pdf().set(opt).from(document.getElementById('pdfRoot')).save();
+});
+
+loadOffers();
+</script>
+</body>
+</html>
