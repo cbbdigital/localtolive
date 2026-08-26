@@ -76,6 +76,7 @@ main{margin-left:var(--sidebar);padding:var(--pad) 64px;max-width:1180px}
 .offers-table td.total{font-weight:600}
 .offers-empty{color:var(--muted);text-align:center;padding:24px 16px!important}
 .offers-reload{background:none;border:none;color:var(--muted);font-size:12px;text-decoration:underline;cursor:pointer;padding:0}
+.offers-table tbody tr:hover{background:#fafafa}
 .status-select{border:1px solid var(--line);padding:6px 8px;font-size:11.5px;background:#fafafa;border-radius:4px;color:var(--ink);font-family:inherit}
 .status-select.status-accepted{color:#1a7f37;border-color:#1a7f37}
 .status-select.status-rejected{color:#c0392b;border-color:#c0392b}
@@ -212,7 +213,10 @@ main{margin-left:var(--sidebar);padding:var(--pad) 64px;max-width:1180px}
     <p class="lead">Completează datele clientului și modelul de ofertă. Generezi un PDF cu oferta personalizată, urmată de contractul standard (drepturi de autor, licențiere, semnături).</p>
 
     <div class="offers-sent">
-      <div class="sec-title">Oferte trimise</div>
+      <div class="sec-title" style="display:flex;align-items:center;justify-content:space-between">
+        <span>Oferte trimise</span>
+        <button class="btn-outline btn-sm" id="newOfferBtn" type="button">+ Ofertă nouă</button>
+      </div>
       <div class="offers-table-wrap">
         <table class="offers-table">
           <thead><tr><th>Data</th><th>Client</th><th>Proiect</th><th>Tip</th><th>Total</th><th>Status</th><th>Semnat</th><th></th></tr></thead>
@@ -251,9 +255,10 @@ main{margin-left:var(--sidebar);padding:var(--pad) 64px;max-width:1180px}
 10 × Exterior
 4 × Twilight (timp de seară)"></textarea></div>
         <div class="row2">
+          <div class="field"><label>Reducere (%) — opțional</label><input type="number" id="ofDiscount" placeholder="Ex: 10" min="0" max="100" step="0.5"></div>
           <div class="field"><label>Nr. contract (opțional)</label><input id="ofNr" placeholder="—"></div>
-          <div class="field"><label>Data</label><input id="ofDate" type="date"></div>
         </div>
+        <div class="field"><label>Data</label><input id="ofDate" type="date"></div>
       </form>
 
       <aside class="offer-preview">
@@ -262,6 +267,7 @@ main{margin-left:var(--sidebar);padding:var(--pad) 64px;max-width:1180px}
           <div class="op-line"><span id="pvHoursLine">0 ore × 0 RON</span><span id="pvHoursTotal">0 RON</span></div>
           <div class="op-label">Editare &amp; licențiere imagini</div>
           <div class="op-line"><span id="pvImgLine">0 × 0 RON</span><span id="pvImgTotal">0 RON</span></div>
+          <div class="op-line" id="pvDiscountRow" style="display:none"><span>Reducere (<span id="pvDiscountPct">0</span>%)</span><span id="pvDiscountAmt">-0 RON</span></div>
           <div class="op-total"><span>Total</span><span id="pvTotal">0 RON</span></div>
         </div>
         <button class="btn-dark" id="genPdfBtn" style="width:100%;margin-top:20px">Descarcă PDF</button>
@@ -510,15 +516,26 @@ function recalc(){
   const rateHour = parseFloat($('ofRateHour').value)||0;
   const images = parseFloat($('ofImages').value)||0;
   const rateImg = parseFloat($('ofRateImg').value)||0;
+  const discount = parseFloat($('ofDiscount').value)||0;
   const totalHours = hours*rateHour;
   const totalImg = images*rateImg;
+  const subtotal = totalHours+totalImg;
+  const discountAmount = subtotal*discount/100;
   $('pvHoursLine').textContent = `${hours} ore × ${rateHour} RON`;
   $('pvHoursTotal').textContent = fmtRON(totalHours);
   $('pvImgLine').textContent = `${images} × ${rateImg} RON`;
   $('pvImgTotal').textContent = fmtRON(totalImg);
-  $('pvTotal').textContent = fmtRON(totalHours+totalImg);
+  const discRow = $('pvDiscountRow');
+  if(discount>0){
+    discRow.style.display = 'flex';
+    $('pvDiscountPct').textContent = discount;
+    $('pvDiscountAmt').textContent = '-'+fmtRON(discountAmount);
+  } else {
+    discRow.style.display = 'none';
+  }
+  $('pvTotal').textContent = fmtRON(subtotal-discountAmount);
 }
-['ofHours','ofRateHour','ofImages','ofRateImg'].forEach(id=>$(id).addEventListener('input', recalc));
+['ofHours','ofRateHour','ofImages','ofRateImg','ofDiscount'].forEach(id=>$(id).addEventListener('input', recalc));
 recalc();
 
 /* ---------------- PDF generation ---------------- */
@@ -533,9 +550,12 @@ function buildPdf(){
   const rateHour = parseFloat($('ofRateHour').value)||0;
   const images = parseFloat($('ofImages').value)||0;
   const rateImg = parseFloat($('ofRateImg').value)||0;
+  const discount = parseFloat($('ofDiscount').value)||0;
   const totalHours = hours*rateHour;
   const totalImg = images*rateImg;
-  const total = totalHours+totalImg;
+  const subtotal = totalHours+totalImg;
+  const discountAmount = subtotal*discount/100;
+  const total = subtotal-discountAmount;
   const nr = $('ofNr').value.trim() || '—';
   const dateVal = $('ofDate').value ? new Date($('ofDate').value) : new Date();
   const dateStr = dateVal.toLocaleDateString('ro-RO');
@@ -565,6 +585,7 @@ function buildPdf(){
         <p class="pdf-calc-line">${hours} ore × ${rateHour} RON / oră = <b>${fmtRON(totalHours)}</b></p>
         <p class="pdf-p">2. Editare &amp; Licențiere Imagini:</p>
         <p class="pdf-calc-line">${images} cadre × ${rateImg} RON / imagine = <b>${fmtRON(totalImg)}</b></p>
+        ${discount>0 ? `<p class="pdf-p">3. Reducere aplicată:</p><p class="pdf-calc-line">${discount}% din ${fmtRON(subtotal)} = <b>-${fmtRON(discountAmount)}</b></p>` : ''}
         <div class="pdf-total">Total: ${fmtRON(total)}</div>
       </div>
     </div>
@@ -637,15 +658,16 @@ async function loadOffers(){
       <option value="accepted" ${status==='accepted'?'selected':''}>Acceptată</option>
       <option value="rejected" ${status==='rejected'?'selected':''}>Respinsă</option>
     </select>`;
-    return `<tr>
+    const dataAttr = JSON.stringify(o).replace(/'/g,"&#39;");
+    return `<tr onclick='reloadOffer(${dataAttr})' style="cursor:pointer">
       <td>${d}</td>
       <td>${escHtml(o.client_name)}</td>
       <td>${escHtml(o.project_name||'—')}</td>
       <td>${escHtml(o.offer_type||'—')}</td>
       <td class="total">${fmtRON(Number(o.total)||0)}</td>
-      <td>${statusCell}</td>
-      <td>${signedCell}</td>
-      <td><button class="offers-reload" onclick='reloadOffer(${JSON.stringify(o).replace(/'/g,"&#39;")})'>reia</button></td>
+      <td onclick="event.stopPropagation()">${statusCell}</td>
+      <td onclick="event.stopPropagation()">${signedCell}</td>
+      <td onclick="event.stopPropagation()"><button class="offers-reload" onclick='reloadOffer(${dataAttr})'>vezi / editează</button></td>
     </tr>`;
   }).join('');
 }
@@ -673,7 +695,10 @@ document.getElementById('signedPdfInput').addEventListener('change', async funct
   loadOffers();
 });
 
+let editingOfferId = null;
+
 function reloadOffer(o){
+  editingOfferId = o.id;
   $('ofClient').value = o.client_name||'';
   $('ofWeb').value = o.website||'';
   $('ofProject').value = o.project_name||'';
@@ -682,10 +707,40 @@ function reloadOffer(o){
   $('ofRateHour').value = o.rate_hour||'';
   $('ofImages').value = o.images||'';
   $('ofRateImg').value = o.rate_img||'';
+  $('ofDiscount').value = o.discount_percent||'';
+  $('ofStructure').value = o.structure||'';
   $('ofNr').value = o.contract_nr||'';
   if(o.offer_date) $('ofDate').value = o.offer_date;
   recalc();
   window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function resetOfferForm(){
+  editingOfferId = null;
+  $('ofClient').value = '';
+  $('ofWeb').value = '';
+  $('ofProject').value = '';
+  $('ofType').value = 'Booking.com';
+  $('ofHours').value = '';
+  $('ofRateHour').value = '';
+  $('ofImages').value = '';
+  $('ofRateImg').value = '';
+  $('ofDiscount').value = '';
+  $('ofStructure').value = '';
+  $('ofNr').value = '';
+  $('ofDate').value = new Date().toISOString().slice(0,10);
+  recalc();
+}
+document.getElementById('newOfferBtn').addEventListener('click', resetOfferForm);
+
+function computeTotal(){
+  const hours = parseFloat($('ofHours').value)||0;
+  const rateHour = parseFloat($('ofRateHour').value)||0;
+  const images = parseFloat($('ofImages').value)||0;
+  const rateImg = parseFloat($('ofRateImg').value)||0;
+  const discount = parseFloat($('ofDiscount').value)||0;
+  const subtotal = hours*rateHour + images*rateImg;
+  return subtotal - subtotal*discount/100;
 }
 
 async function saveOffer(){
@@ -698,11 +753,18 @@ async function saveOffer(){
     rate_hour: parseFloat($('ofRateHour').value)||0,
     images: parseFloat($('ofImages').value)||0,
     rate_img: parseFloat($('ofRateImg').value)||0,
-    total: (parseFloat($('ofHours').value)||0)*(parseFloat($('ofRateHour').value)||0) + (parseFloat($('ofImages').value)||0)*(parseFloat($('ofRateImg').value)||0),
+    discount_percent: parseFloat($('ofDiscount').value)||0,
+    structure: $('ofStructure').value || null,
+    total: computeTotal(),
     contract_nr: $('ofNr').value.trim() || null,
     offer_date: $('ofDate').value || new Date().toISOString().slice(0,10)
   };
-  await sb.from('photocrm_offers').insert(payload);
+  if(editingOfferId){
+    await sb.from('photocrm_offers').update(payload).eq('id', editingOfferId);
+  } else {
+    const { data } = await sb.from('photocrm_offers').insert(payload).select().single();
+    if(data) editingOfferId = data.id;
+  }
   loadOffers();
 }
 
