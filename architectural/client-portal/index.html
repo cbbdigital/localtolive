@@ -76,6 +76,16 @@ main{margin-left:var(--sidebar);padding:var(--pad) 64px;max-width:1180px}
 .offers-table td.total{font-weight:600}
 .offers-empty{color:var(--muted);text-align:center;padding:24px 16px!important}
 .offers-reload{background:none;border:none;color:var(--muted);font-size:12px;text-decoration:underline;cursor:pointer;padding:0}
+.status-select{border:1px solid var(--line);padding:6px 8px;font-size:11.5px;background:#fafafa;border-radius:4px;color:var(--ink);font-family:inherit}
+.status-select.status-accepted{color:#1a7f37;border-color:#1a7f37}
+.status-select.status-rejected{color:#c0392b;border-color:#c0392b}
+.status-select.status-pending{color:#9a7b1a;border-color:#e0c25a}
+
+/* ---------- login gate ---------- */
+.login-gate{position:fixed;inset:0;background:#fff;z-index:100;display:none;align-items:center;justify-content:center}
+.login-card{width:100%;max-width:320px;padding:0 24px}
+.login-error{color:#c0392b;font-size:12.5px;margin:-6px 0 16px}
+.logout-link{background:none;border:none;color:var(--muted);font-size:11px;text-decoration:underline;cursor:pointer;padding:0;margin-top:6px;display:block}
 
 /* ---------- ofertă ---------- */
 .offer-grid{display:grid;grid-template-columns:1fr 320px;gap:56px;align-items:start}
@@ -135,6 +145,18 @@ main{margin-left:var(--sidebar);padding:var(--pad) 64px;max-width:1180px}
 </head>
 <body>
 
+<div class="login-gate" id="loginGate">
+  <form class="login-card" id="loginForm">
+    <div class="brand" style="margin-bottom:28px"><span class="name">CIPRIAN BADIC<small>PORTAL CLIENȚI</small></span></div>
+    <div class="field"><label>Email</label><input type="email" id="loginEmail" required></div>
+    <div class="field"><label>Parolă</label><input type="password" id="loginPass" required></div>
+    <div class="login-error" id="loginError" style="display:none"></div>
+    <button class="btn-dark" type="submit" style="width:100%;justify-content:center">Intră</button>
+  </form>
+</div>
+
+<div id="appRoot" style="display:none">
+
 <button class="menu-toggle" id="menuToggle" aria-label="Meniu"><span></span></button>
 <div class="sb-backdrop" id="sbBackdrop"></div>
 <aside class="sidebar" id="sidebar">
@@ -143,7 +165,7 @@ main{margin-left:var(--sidebar);padding:var(--pad) 64px;max-width:1180px}
     <a data-view="galerie" class="active">Galerie client</a>
     <a data-view="oferta">Ofertă &amp; contract</a>
   </nav>
-  <div class="sb-foot">Fotografie de arhitectură</div>
+  <div class="sb-foot">Fotografie de arhitectură<button class="logout-link" id="logoutBtn">Deconectare</button></div>
 </aside>
 
 <main>
@@ -193,8 +215,8 @@ main{margin-left:var(--sidebar);padding:var(--pad) 64px;max-width:1180px}
       <div class="sec-title">Oferte trimise</div>
       <div class="offers-table-wrap">
         <table class="offers-table">
-          <thead><tr><th>Data</th><th>Client</th><th>Proiect</th><th>Tip</th><th>Total</th><th></th></tr></thead>
-          <tbody id="offersBody"><tr><td colspan="6" class="offers-empty">Se încarcă…</td></tr></tbody>
+          <thead><tr><th>Data</th><th>Client</th><th>Proiect</th><th>Tip</th><th>Total</th><th>Status</th><th>Semnat</th><th></th></tr></thead>
+          <tbody id="offersBody"><tr><td colspan="8" class="offers-empty">Se încarcă…</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -243,6 +265,7 @@ main{margin-left:var(--sidebar);padding:var(--pad) 64px;max-width:1180px}
           <div class="op-total"><span>Total</span><span id="pvTotal">0 RON</span></div>
         </div>
         <button class="btn-dark" id="genPdfBtn" style="width:100%;margin-top:20px">Descarcă PDF</button>
+        <button class="btn-outline" id="saveOfferBtn" style="width:100%;margin-top:10px;justify-content:center">Salvează fără PDF</button>
       </aside>
     </div>
   </div>
@@ -251,6 +274,9 @@ main{margin-left:var(--sidebar);padding:var(--pad) 64px;max-width:1180px}
 
 <!-- hidden template used only when generating the PDF -->
 <div id="pdfRoot"></div>
+<input type="file" id="signedPdfInput" accept="application/pdf" hidden>
+
+</div><!-- /appRoot -->
 
 <script>
 /* ---------------- nav ---------------- */
@@ -277,9 +303,47 @@ sbBackdrop.addEventListener('click', closeMenu);
 /* ---------------- supabase ---------------- */
 const SUPABASE_URL = 'https://kowvuvieclbpyoszswjo.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtvd3Z1dmllY2xicHlvc3pzd2pvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNDI1MjgsImV4cCI6MjEwMjcxODUyOH0.JlzPHP-9OjGLTDLWi2UtbWBGHpmoBnnRhdfTBgOzoIw';
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    storageKey: 'photocrm-portal-auth', // unic, ca sa nu se suprapuna cu sesiunea celuilalt CRM de pe acelasi domeniu
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: false
+  }
+});
 const BUCKET = 'photocrm-photos';
 const CLIENT_ORIGIN = 'https://localtolive.ro/architectural';
+
+/* ---------------- auth gate ---------------- */
+let appInitialized = false;
+function showApp(){
+  document.getElementById('loginGate').style.display = 'none';
+  document.getElementById('appRoot').style.display = '';
+  if(!appInitialized){ appInitialized = true; loadClients(); loadOffers(); }
+}
+function showLogin(){
+  document.getElementById('appRoot').style.display = 'none';
+  document.getElementById('loginGate').style.display = 'flex';
+}
+async function checkAuth(){
+  const { data: { session } } = await sb.auth.getSession();
+  session ? showApp() : showLogin();
+}
+sb.auth.onAuthStateChange((_event, session)=>{ session ? showApp() : showLogin(); });
+checkAuth();
+
+document.getElementById('loginForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPass').value;
+  const errEl = document.getElementById('loginError');
+  errEl.style.display = 'none';
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  if(error){ errEl.textContent = 'Email sau parolă greșite.'; errEl.style.display = 'block'; return; }
+});
+document.getElementById('logoutBtn').addEventListener('click', async ()=>{
+  await sb.auth.signOut();
+});
 
 let clients = [];
 let currentClient = null; // {id, slug, client_name, project_name}
@@ -435,8 +499,6 @@ async function removePhoto(id, path){
 document.addEventListener('contextmenu', e=>{ if(e.target.closest('.g-tile')) e.preventDefault(); });
 document.addEventListener('dragstart', e=>{ if(e.target.closest('.g-tile')) e.preventDefault(); });
 
-loadClients();
-
 /* ---------------- ofertă: live calc ---------------- */
 const $ = id=>document.getElementById(id);
 document.getElementById('ofDate').value = new Date().toISOString().slice(0,10);
@@ -554,25 +616,62 @@ function buildPdf(){
 }
 
 /* ---------------- oferte trimise ---------------- */
+const OFFERS_BUCKET = 'photocrm-offers';
+let pendingSignedOfferId = null;
+
 async function loadOffers(){
   const tbody = document.getElementById('offersBody');
   const { data, error } = await sb.from('photocrm_offers').select('*').order('created_at', {ascending:false}).limit(50);
   if(error || !data || !data.length){
-    tbody.innerHTML = '<tr><td colspan="6" class="offers-empty">Nicio ofertă trimisă încă.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" class="offers-empty">Nicio ofertă trimisă încă.</td></tr>';
     return;
   }
   tbody.innerHTML = data.map(o=>{
     const d = o.offer_date ? new Date(o.offer_date).toLocaleDateString('ro-RO') : '—';
+    const signedCell = o.signed_pdf_path
+      ? `<a href="${sb.storage.from(OFFERS_BUCKET).getPublicUrl(o.signed_pdf_path).data.publicUrl}" target="_blank" class="offers-reload">vezi PDF</a> · <button class="offers-reload" onclick="triggerSignedUpload('${o.id}')">înlocuiește</button>`
+      : `<button class="offers-reload" onclick="triggerSignedUpload('${o.id}')">încarcă semnat</button>`;
+    const status = o.status || 'pending';
+    const statusCell = `<select class="status-select status-${status}" onchange="updateOfferStatus('${o.id}', this.value)">
+      <option value="pending" ${status==='pending'?'selected':''}>În așteptare</option>
+      <option value="accepted" ${status==='accepted'?'selected':''}>Acceptată</option>
+      <option value="rejected" ${status==='rejected'?'selected':''}>Respinsă</option>
+    </select>`;
     return `<tr>
       <td>${d}</td>
       <td>${escHtml(o.client_name)}</td>
       <td>${escHtml(o.project_name||'—')}</td>
       <td>${escHtml(o.offer_type||'—')}</td>
       <td class="total">${fmtRON(Number(o.total)||0)}</td>
+      <td>${statusCell}</td>
+      <td>${signedCell}</td>
       <td><button class="offers-reload" onclick='reloadOffer(${JSON.stringify(o).replace(/'/g,"&#39;")})'>reia</button></td>
     </tr>`;
   }).join('');
 }
+
+async function updateOfferStatus(id, status){
+  await sb.from('photocrm_offers').update({status}).eq('id', id);
+  loadOffers();
+}
+
+function triggerSignedUpload(id){
+  pendingSignedOfferId = id;
+  document.getElementById('signedPdfInput').click();
+}
+
+document.getElementById('signedPdfInput').addEventListener('change', async function(){
+  const file = this.files[0];
+  this.value = '';
+  if(!file || !pendingSignedOfferId) return;
+  if(file.type !== 'application/pdf'){ alert('Alege un fișier PDF.'); return; }
+  const path = `${pendingSignedOfferId}.pdf`;
+  const { error: upErr } = await sb.storage.from(OFFERS_BUCKET).upload(path, file, {contentType:'application/pdf', upsert:true});
+  if(upErr){ alert('Eroare la upload: '+upErr.message); return; }
+  await sb.from('photocrm_offers').update({signed_pdf_path:path}).eq('id', pendingSignedOfferId);
+  pendingSignedOfferId = null;
+  loadOffers();
+});
 
 function reloadOffer(o){
   $('ofClient').value = o.client_name||'';
@@ -622,7 +721,11 @@ document.getElementById('genPdfBtn').addEventListener('click', ()=>{
   html2pdf().set(opt).from(document.getElementById('pdfRoot')).save();
 });
 
-loadOffers();
+document.getElementById('saveOfferBtn').addEventListener('click', async ()=>{
+  const btn = document.getElementById('saveOfferBtn');
+  await saveOffer();
+  const old = btn.textContent; btn.textContent='Salvat'; setTimeout(()=>btn.textContent=old, 1400);
+});
 </script>
 </body>
 </html>
