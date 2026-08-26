@@ -219,8 +219,8 @@ main{margin-left:var(--sidebar);padding:var(--pad) 64px;max-width:1180px}
       </div>
       <div class="offers-table-wrap">
         <table class="offers-table">
-          <thead><tr><th>Data</th><th>Client</th><th>Proiect</th><th>Tip</th><th>Total</th><th>Status</th><th>Semnat</th><th></th></tr></thead>
-          <tbody id="offersBody"><tr><td colspan="8" class="offers-empty">Se încarcă…</td></tr></tbody>
+          <thead><tr><th>Data</th><th>Client</th><th>Proiect</th><th>Tip</th><th>Total</th><th>Status</th><th>Semnat</th><th>Factură</th><th></th></tr></thead>
+          <tbody id="offersBody"><tr><td colspan="9" class="offers-empty">Se încarcă…</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -231,6 +231,15 @@ main{margin-left:var(--sidebar);padding:var(--pad) 64px;max-width:1180px}
         <div class="row2">
           <div class="field"><label>Website (opțional)</label><input id="ofWeb" placeholder="Ex: jardinehills.ro"></div>
           <div class="field"><label>Nume proiect</label><input id="ofProject" placeholder="Ex: Jardine Hills"></div>
+        </div>
+        <div class="field"><label>Telefon client</label><input id="ofPhone" placeholder="Ex: 07xx xxx xxx"></div>
+        <div class="row2">
+          <div class="field"><label>Nume firmă (facturare)</label><input id="ofCompany" placeholder="Ex: SC Exemplu SRL"></div>
+          <div class="field"><label>Adresa firmei</label><input id="ofCompanyAddress" placeholder="Ex: Str. Exemplu nr. 1, București"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>CUI</label><input id="ofCui" placeholder="Ex: RO12345678"></div>
+          <div class="field"><label>Cod Fiscal</label><input id="ofCodFiscal" placeholder="Ex: 12345678"></div>
         </div>
         <div class="field"><label>Tip ofertă</label>
           <select id="ofType">
@@ -281,6 +290,7 @@ main{margin-left:var(--sidebar);padding:var(--pad) 64px;max-width:1180px}
 <!-- hidden template used only when generating the PDF -->
 <div id="pdfRoot"></div>
 <input type="file" id="signedPdfInput" accept="application/pdf" hidden>
+<input type="file" id="invoicePdfInput" accept="application/pdf" hidden>
 
 </div><!-- /appRoot -->
 
@@ -560,7 +570,19 @@ function buildPdf(){
   const dateVal = $('ofDate').value ? new Date($('ofDate').value) : new Date();
   const dateStr = dateVal.toLocaleDateString('ro-RO');
   const structureLines = $('ofStructure').value.split('\n').map(s=>s.trim()).filter(Boolean);
-  const beneficiarLine = web ? `${esc(client)} — ${esc(web)}` : esc(client);
+  const phone = $('ofPhone').value.trim();
+  const company = $('ofCompany').value.trim();
+  const companyAddress = $('ofCompanyAddress').value.trim();
+  const cui = $('ofCui').value.trim();
+  const codFiscal = $('ofCodFiscal').value.trim();
+  let beneficiarLine = web ? `${esc(client)} — ${esc(web)}` : esc(client);
+  const beneficiarDetails = [];
+  if(company) beneficiarDetails.push(`reprezentat prin ${esc(company)}`);
+  if(companyAddress) beneficiarDetails.push(`cu sediul în ${esc(companyAddress)}`);
+  if(cui) beneficiarDetails.push(`CUI ${esc(cui)}`);
+  if(codFiscal) beneficiarDetails.push(`Cod Fiscal ${esc(codFiscal)}`);
+  if(phone) beneficiarDetails.push(`Telefon ${esc(phone)}`);
+  if(beneficiarDetails.length) beneficiarLine += `, ${beneficiarDetails.join(', ')}`;
 
   const head = `<div class="pdf-head">
     <div><div class="pdf-brand-name">CIPRIAN BADIC</div><div class="pdf-brand-sub">FOTOGRAFIE DE ARHITECTURĂ</div></div>
@@ -638,13 +660,15 @@ function buildPdf(){
 
 /* ---------------- oferte trimise ---------------- */
 const OFFERS_BUCKET = 'photocrm-offers';
+const INVOICES_BUCKET = 'photocrm-invoices';
 let pendingSignedOfferId = null;
+let pendingInvoiceOfferId = null;
 
 async function loadOffers(){
   const tbody = document.getElementById('offersBody');
   const { data, error } = await sb.from('photocrm_offers').select('*').order('created_at', {ascending:false}).limit(50);
   if(error || !data || !data.length){
-    tbody.innerHTML = '<tr><td colspan="8" class="offers-empty">Nicio ofertă trimisă încă.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" class="offers-empty">Nicio ofertă trimisă încă.</td></tr>';
     return;
   }
   tbody.innerHTML = data.map(o=>{
@@ -652,6 +676,9 @@ async function loadOffers(){
     const signedCell = o.signed_pdf_path
       ? `<a href="${sb.storage.from(OFFERS_BUCKET).getPublicUrl(o.signed_pdf_path).data.publicUrl}" target="_blank" class="offers-reload">vezi PDF</a> · <button class="offers-reload" onclick="triggerSignedUpload('${o.id}')">înlocuiește</button>`
       : `<button class="offers-reload" onclick="triggerSignedUpload('${o.id}')">încarcă semnat</button>`;
+    const invoiceCell = o.invoice_pdf_path
+      ? `<a href="${sb.storage.from(INVOICES_BUCKET).getPublicUrl(o.invoice_pdf_path).data.publicUrl}" target="_blank" class="offers-reload">vezi factură</a> · <button class="offers-reload" onclick="triggerInvoiceUpload('${o.id}')">înlocuiește</button>`
+      : `<button class="offers-reload" onclick="triggerInvoiceUpload('${o.id}')">încarcă factură</button>`;
     const status = o.status || 'pending';
     const statusCell = `<select class="status-select status-${status}" onchange="updateOfferStatus('${o.id}', this.value)">
       <option value="pending" ${status==='pending'?'selected':''}>În așteptare</option>
@@ -667,6 +694,7 @@ async function loadOffers(){
       <td class="total">${fmtRON(Number(o.total)||0)}</td>
       <td onclick="event.stopPropagation()">${statusCell}</td>
       <td onclick="event.stopPropagation()">${signedCell}</td>
+      <td onclick="event.stopPropagation()">${invoiceCell}</td>
       <td onclick="event.stopPropagation()"><button class="offers-reload" onclick='reloadOffer(${dataAttr})'>vezi / editează</button></td>
     </tr>`;
   }).join('');
@@ -695,6 +723,24 @@ document.getElementById('signedPdfInput').addEventListener('change', async funct
   loadOffers();
 });
 
+function triggerInvoiceUpload(id){
+  pendingInvoiceOfferId = id;
+  document.getElementById('invoicePdfInput').click();
+}
+
+document.getElementById('invoicePdfInput').addEventListener('change', async function(){
+  const file = this.files[0];
+  this.value = '';
+  if(!file || !pendingInvoiceOfferId) return;
+  if(file.type !== 'application/pdf'){ alert('Alege un fișier PDF.'); return; }
+  const path = `${pendingInvoiceOfferId}.pdf`;
+  const { error: upErr } = await sb.storage.from(INVOICES_BUCKET).upload(path, file, {contentType:'application/pdf', upsert:true});
+  if(upErr){ alert('Eroare la upload: '+upErr.message); return; }
+  await sb.from('photocrm_offers').update({invoice_pdf_path:path}).eq('id', pendingInvoiceOfferId);
+  pendingInvoiceOfferId = null;
+  loadOffers();
+});
+
 let editingOfferId = null;
 
 function reloadOffer(o){
@@ -709,6 +755,11 @@ function reloadOffer(o){
   $('ofRateImg').value = o.rate_img||'';
   $('ofDiscount').value = o.discount_percent||'';
   $('ofStructure').value = o.structure||'';
+  $('ofPhone').value = o.phone||'';
+  $('ofCompany').value = o.company_name||'';
+  $('ofCompanyAddress').value = o.company_address||'';
+  $('ofCui').value = o.cui||'';
+  $('ofCodFiscal').value = o.cod_fiscal||'';
   $('ofNr').value = o.contract_nr||'';
   if(o.offer_date) $('ofDate').value = o.offer_date;
   recalc();
@@ -727,6 +778,11 @@ function resetOfferForm(){
   $('ofRateImg').value = '';
   $('ofDiscount').value = '';
   $('ofStructure').value = '';
+  $('ofPhone').value = '';
+  $('ofCompany').value = '';
+  $('ofCompanyAddress').value = '';
+  $('ofCui').value = '';
+  $('ofCodFiscal').value = '';
   $('ofNr').value = '';
   $('ofDate').value = new Date().toISOString().slice(0,10);
   recalc();
@@ -755,6 +811,11 @@ async function saveOffer(){
     rate_img: parseFloat($('ofRateImg').value)||0,
     discount_percent: parseFloat($('ofDiscount').value)||0,
     structure: $('ofStructure').value || null,
+    phone: $('ofPhone').value.trim() || null,
+    company_name: $('ofCompany').value.trim() || null,
+    company_address: $('ofCompanyAddress').value.trim() || null,
+    cui: $('ofCui').value.trim() || null,
+    cod_fiscal: $('ofCodFiscal').value.trim() || null,
     total: computeTotal(),
     contract_nr: $('ofNr').value.trim() || null,
     offer_date: $('ofDate').value || new Date().toISOString().slice(0,10)
@@ -772,15 +833,20 @@ document.getElementById('genPdfBtn').addEventListener('click', ()=>{
   buildPdf();
   saveOffer();
   const client = $('ofClient').value.trim() || 'client';
+  const btn = document.getElementById('genPdfBtn');
+  const oldLabel = btn.textContent;
+  btn.textContent = 'Se generează…';
   const opt = {
     margin:0,
     filename:`Oferta_${client.replace(/\s+/g,'_')}.pdf`,
     image:{type:'jpeg', quality:0.98},
-    html2canvas:{scale:2, useCORS:true},
-    jsPDF:{unit:'px', format:[794,1123], orientation:'portrait'},
+    html2canvas:{scale:2, useCORS:true, windowWidth:794, windowHeight:document.getElementById('pdfRoot').scrollHeight},
+    jsPDF:{unit:'mm', format:'a4', orientation:'portrait'},
     pagebreak:{mode:['css'], after:'.pdf-page'}
   };
-  html2pdf().set(opt).from(document.getElementById('pdfRoot')).save();
+  html2pdf().set(opt).from(document.getElementById('pdfRoot')).save()
+    .catch(err=>{ console.error('Eroare generare PDF:', err); alert('Eroare la generarea PDF: '+(err && err.message ? err.message : err)); })
+    .finally(()=>{ btn.textContent = oldLabel; });
 });
 
 document.getElementById('saveOfferBtn').addEventListener('click', async ()=>{
