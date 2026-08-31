@@ -647,29 +647,91 @@ function buildOfferPdf(data){
     y += opts.bold ? 8 : 6;
   }
 
-  // PAGE 1 — OFERTA
+  // PAGE 1 — OFERTA (two columns)
   drawHead();
   h1(`Oferta ${data.project}`);
-  sectionTitle('Detalii despre proiect si structura cadrelor');
-  labelPara('Tip oferta:', data.type);
-  labelPara('Timp estimat la locatie:', `${data.hours} ore`);
-  para(`Structura recomandata cadre (${data.images} imagini):`, {bold:true});
-  if(data.structureLines.length) bullets(data.structureLines.map(t=>({text:t})));
-  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(110,110,110);
-  para('Structura poate sa difere in functie de dorintele clientului sau nevoia spatiului.');
-  y += 3;
-  sectionTitle('Calcul tarifar si cost total');
-  para('1. Sesiune Foto la Locatie:', {bold:true});
-  para(`${data.hours} ore x ${data.rateHour} RON / ora = ${fmtRON(data.totalHours)}`);
-  para('2. Editare & Licentiere Imagini:', {bold:true});
-  para(`${data.images} cadre x ${data.rateImg} RON / imagine = ${fmtRON(data.totalImg)}`);
-  if(data.discount > 0){
-    para('3. Reducere aplicata:', {bold:true});
-    para(`${data.discount}% din ${fmtRON(data.subtotal)} = -${fmtRON(data.discountAmount)}`);
+
+  function makeCol(x, width, startY){
+    let cy = startY;
+    return {
+      getY: ()=>cy,
+      sectionTitle(text){
+        doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(20,20,20);
+        doc.text(text, x, cy); cy += 2;
+        doc.setDrawColor(200,200,200); doc.setLineWidth(0.3);
+        doc.line(x, cy, x+width, cy); cy += 6;
+      },
+      labelPara(label, rest){
+        doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(30,30,30);
+        doc.text(label, x, cy);
+        const labelW = doc.getTextWidth(label+' ');
+        doc.setFont('helvetica','normal');
+        const lines = doc.splitTextToSize(rest, width-labelW);
+        doc.text(lines[0]||'', x+labelW, cy);
+        cy += 5.4;
+        for(let i=1;i<lines.length;i++){ doc.text(lines[i], x, cy); cy += 5.4; }
+        cy += 2;
+      },
+      para(text, opts){
+        opts = opts || {};
+        doc.setFont('helvetica', opts.bold?'bold':'normal');
+        doc.setFontSize(opts.small?9:10);
+        const c = opts.small ? 110 : (opts.bold ? 15 : 30);
+        doc.setTextColor(c,c,c);
+        doc.splitTextToSize(text, width).forEach(line=>{ doc.text(line, x, cy); cy += opts.small ? 4.6 : 5.4; });
+        cy += 2;
+      },
+      bullets(items){
+        doc.setFontSize(10);
+        items.forEach(t=>{
+          doc.setFont('helvetica','normal'); doc.setTextColor(30,30,30);
+          doc.text('-', x, cy);
+          doc.splitTextToSize(t, width-5).forEach(line=>{ doc.text(line, x+5, cy); cy += 5.2; });
+          cy += 1;
+        });
+        cy += 2;
+      },
+      rule(){
+        doc.setDrawColor(15,15,15); doc.setLineWidth(0.4);
+        doc.line(x, cy, x+width, cy); cy += 6;
+      },
+      totalLine(label, value){
+        doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(15,15,15);
+        doc.text(label, x, cy);
+        doc.text(value, x+width, cy, {align:'right'});
+        cy += 8;
+      }
+    };
   }
-  doc.setDrawColor(15,15,15); doc.setLineWidth(0.4);
-  checkSpace(10); doc.line(marginX, y, pageW-marginX, y); y += 6;
-  totalLine('TOTAL', fmtRON(data.total), {bold:true});
+
+  const colGap = 10;
+  const colW = (contentW - colGap) / 2;
+  const leftX = marginX;
+  const rightX = marginX + colW + colGap;
+  const colStartY = y;
+
+  const left = makeCol(leftX, colW, colStartY);
+  left.sectionTitle('Detalii despre proiect si structura cadrelor');
+  left.labelPara('Tip oferta:', data.type);
+  left.labelPara('Timp estimat la locatie:', `${data.hours} ore`);
+  left.para(`Structura recomandata cadre (${data.images} imagini):`, {bold:true});
+  if(data.structureLines.length) left.bullets(data.structureLines);
+  left.para('Structura poate sa difere in functie de dorintele clientului sau nevoia spatiului.', {small:true});
+
+  const right = makeCol(rightX, colW, colStartY);
+  right.sectionTitle('Calcul tarifar si cost total');
+  right.para('1. Sesiune Foto la Locatie:', {bold:true});
+  right.para(`${data.hours} ore x ${data.rateHour} RON / ora = ${fmtRON(data.totalHours)}`);
+  right.para('2. Editare & Licentiere Imagini:', {bold:true});
+  right.para(`${data.images} cadre x ${data.rateImg} RON / imagine = ${fmtRON(data.totalImg)}`);
+  if(data.discount > 0){
+    right.para('3. Reducere aplicata:', {bold:true});
+    right.para(`${data.discount}% din ${fmtRON(data.subtotal)} = -${fmtRON(data.discountAmount)}`);
+  }
+  right.rule();
+  right.totalLine('TOTAL', fmtRON(data.total));
+
+  y = Math.max(left.getY(), right.getY()) + 4;
 
   // PAGE 2+ — CONTRACT
   newPage();
