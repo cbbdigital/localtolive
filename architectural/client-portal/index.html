@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Portal Client · Ciprian Badic</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -548,114 +548,174 @@ function recalc(){
 ['ofHours','ofRateHour','ofImages','ofRateImg','ofDiscount'].forEach(id=>$(id).addEventListener('input', recalc));
 recalc();
 
-/* ---------------- PDF generation ---------------- */
-function esc(s){ return (s||'').replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+/* ---------------- PDF generation (native jsPDF text — no html2canvas) ---------------- */
+function stripDia(s){
+  if(!s) return '';
+  return String(s)
+    .replace(/[ăâ]/g,'a').replace(/[ĂÂ]/g,'A')
+    .replace(/î/g,'i').replace(/Î/g,'I')
+    .replace(/[șş]/g,'s').replace(/[ȘŞ]/g,'S')
+    .replace(/[țţ]/g,'t').replace(/[ȚŢ]/g,'T');
+}
 
-function buildPdf(){
-  const client = $('ofClient').value.trim() || 'Client';
-  const web = $('ofWeb').value.trim();
-  const project = $('ofProject').value.trim() || client;
-  const type = $('ofType').value;
-  const hours = parseFloat($('ofHours').value)||0;
-  const rateHour = parseFloat($('ofRateHour').value)||0;
-  const images = parseFloat($('ofImages').value)||0;
-  const rateImg = parseFloat($('ofRateImg').value)||0;
-  const discount = parseFloat($('ofDiscount').value)||0;
-  const totalHours = hours*rateHour;
-  const totalImg = images*rateImg;
-  const subtotal = totalHours+totalImg;
-  const discountAmount = subtotal*discount/100;
-  const total = subtotal-discountAmount;
-  const nr = $('ofNr').value.trim() || '—';
-  const dateVal = $('ofDate').value ? new Date($('ofDate').value) : new Date();
-  const dateStr = dateVal.toLocaleDateString('ro-RO');
-  const structureLines = $('ofStructure').value.split('\n').map(s=>s.trim()).filter(Boolean);
-  const phone = $('ofPhone').value.trim();
-  const company = $('ofCompany').value.trim();
-  const companyAddress = $('ofCompanyAddress').value.trim();
-  const cui = $('ofCui').value.trim();
-  const codFiscal = $('ofCodFiscal').value.trim();
-  let beneficiarLine = web ? `${esc(client)} — ${esc(web)}` : esc(client);
-  const beneficiarDetails = [];
-  if(company) beneficiarDetails.push(`reprezentat prin ${esc(company)}`);
-  if(companyAddress) beneficiarDetails.push(`cu sediul în ${esc(companyAddress)}`);
-  if(cui) beneficiarDetails.push(`CUI ${esc(cui)}`);
-  if(codFiscal) beneficiarDetails.push(`Cod Fiscal ${esc(codFiscal)}`);
-  if(phone) beneficiarDetails.push(`Telefon ${esc(phone)}`);
-  if(beneficiarDetails.length) beneficiarLine += `, ${beneficiarDetails.join(', ')}`;
+function buildOfferPdf(data){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'a4', orientation:'portrait' });
+  const marginX = 18, pageW = 210, pageH = 297, contentW = pageW - marginX*2;
+  const marginTop = 20, marginBottom = 20;
+  let y = marginTop;
 
-  const head = `<div class="pdf-head">
-    <div><div class="pdf-brand-name">CIPRIAN BADIC</div><div class="pdf-brand-sub">FOTOGRAFIE DE ARHITECTURĂ</div></div>
-    <div class="pdf-meta">Contract Nr. ${esc(nr)}<br>Data: ${dateStr}</div>
-  </div>`;
+  function newPage(){ doc.addPage(); y = marginTop; drawHead(); }
+  function checkSpace(h){ if(y + h > pageH - marginBottom) newPage(); }
+  function drawHead(){
+    doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(20,20,20);
+    doc.text('CIPRIAN BADIC', marginX, y);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(100,100,100);
+    doc.text('FOTOGRAFIE DE ARHITECTURA', marginX, y+4.5);
+    doc.setFontSize(9); doc.setTextColor(60,60,60);
+    doc.text(`Contract Nr. ${data.nr}`, pageW-marginX, y, {align:'right'});
+    doc.text(`Data: ${data.dateStr}`, pageW-marginX, y+4.5, {align:'right'});
+    doc.setDrawColor(20,20,20); doc.setLineWidth(0.6);
+    doc.line(marginX, y+8, pageW-marginX, y+8);
+    y += 16;
+  }
+  function h1(text){
+    checkSpace(12); doc.setFont('helvetica','bold'); doc.setFontSize(17); doc.setTextColor(15,15,15);
+    doc.text(text, marginX, y); y += 10;
+  }
+  function sectionTitle(text){
+    checkSpace(10); doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(20,20,20);
+    doc.text(text, marginX, y); y += 2;
+    doc.setDrawColor(200,200,200); doc.setLineWidth(0.3);
+    doc.line(marginX, y, pageW-marginX, y); y += 6;
+  }
+  function artTitle(text){
+    checkSpace(10); doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(15,15,15);
+    doc.text(text, marginX, y); y += 6.5;
+  }
+  function para(text, opts){
+    opts = opts || {};
+    doc.setFont('helvetica', opts.bold ? 'bold' : 'normal');
+    doc.setFontSize(10); doc.setTextColor(30,30,30);
+    const lines = doc.splitTextToSize(text, contentW);
+    lines.forEach(line=>{ checkSpace(5.4); doc.text(line, marginX, y); y += 5.4; });
+    y += 2;
+  }
+  function labelPara(label, rest){
+    checkSpace(5.4);
+    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(30,30,30);
+    doc.text(label, marginX, y);
+    const labelW = doc.getTextWidth(label + ' ');
+    doc.setFont('helvetica','normal');
+    const restLines = doc.splitTextToSize(rest, contentW - labelW);
+    doc.text(restLines[0]||'', marginX + labelW, y);
+    y += 5.4;
+    for(let i=1;i<restLines.length;i++){ checkSpace(5.4); doc.text(restLines[i], marginX, y); y += 5.4; }
+    y += 2;
+  }
+  function bullets(items){
+    doc.setFontSize(10);
+    items.forEach(item=>{
+      const boldPrefix = item.bold || null;
+      const text = item.text || item;
+      const bulletIndent = 5, maxW = contentW - bulletIndent;
+      checkSpace(5.2); doc.setTextColor(30,30,30);
+      doc.text('-', marginX, y);
+      if(boldPrefix){
+        doc.setFont('helvetica','bold');
+        const boldLines = doc.splitTextToSize(boldPrefix, maxW);
+        boldLines.forEach((line,i)=>{ if(i>0) checkSpace(5.2); doc.text(line, marginX+bulletIndent, y); y += 5.2; });
+        const rest = text.replace(boldPrefix,'').trim();
+        if(rest){
+          doc.setFont('helvetica','normal');
+          doc.splitTextToSize(rest, maxW).forEach(line=>{ checkSpace(5.2); doc.text(line, marginX+bulletIndent, y); y += 5.2; });
+        }
+      } else {
+        doc.setFont('helvetica','normal');
+        doc.splitTextToSize(text, maxW).forEach((line,i)=>{ if(i>0) checkSpace(5.2); doc.text(line, marginX+bulletIndent, y); y += 5.2; });
+      }
+      y += 1;
+    });
+    y += 2;
+  }
+  function totalLine(label, value, opts){
+    opts = opts||{};
+    checkSpace(8);
+    doc.setFont('helvetica', opts.bold?'bold':'normal'); doc.setFontSize(opts.bold?12:10); doc.setTextColor(15,15,15);
+    doc.text(label, marginX, y);
+    if(value) doc.text(value, pageW-marginX, y, {align:'right'});
+    y += opts.bold ? 8 : 6;
+  }
 
-  const page1 = `<div class="pdf-page">
-    ${head}
-    <div class="pdf-h1">Oferta ${esc(project)}</div>
-    <div class="pdf-cols">
-      <div>
-        <div class="pdf-sec-title">Detalii despre proiect și structura cadrelor</div>
-        <p class="pdf-p"><b>Tip ofertă:</b> ${esc(type)}</p>
-        <p class="pdf-p"><b>Timp estimat la locație:</b> ${hours} ore</p>
-        <p class="pdf-p"><b>Structură recomandată cadre (${images} imagini):</b></p>
-        <ul class="pdf-list">${structureLines.map(l=>`<li>${esc(l)}</li>`).join('')}</ul>
-        <p class="pdf-p" style="margin-top:14px;color:#666">Structura poate să difere în funcție de dorințele clientului sau nevoia spațiului.</p>
-      </div>
-      <div>
-        <div class="pdf-sec-title">Calcul tarifar și cost total</div>
-        <p class="pdf-p">1. Sesiune Foto la Locație:</p>
-        <p class="pdf-calc-line">${hours} ore × ${rateHour} RON / oră = <b>${fmtRON(totalHours)}</b></p>
-        <p class="pdf-p">2. Editare &amp; Licențiere Imagini:</p>
-        <p class="pdf-calc-line">${images} cadre × ${rateImg} RON / imagine = <b>${fmtRON(totalImg)}</b></p>
-        ${discount>0 ? `<p class="pdf-p">3. Reducere aplicată:</p><p class="pdf-calc-line">${discount}% din ${fmtRON(subtotal)} = <b>-${fmtRON(discountAmount)}</b></p>` : ''}
-        <div class="pdf-total">Total: ${fmtRON(total)}</div>
-      </div>
-    </div>
-  </div>`;
+  // PAGE 1 — OFERTA
+  drawHead();
+  h1(`Oferta ${data.project}`);
+  sectionTitle('Detalii despre proiect si structura cadrelor');
+  labelPara('Tip oferta:', data.type);
+  labelPara('Timp estimat la locatie:', `${data.hours} ore`);
+  para(`Structura recomandata cadre (${data.images} imagini):`, {bold:true});
+  if(data.structureLines.length) bullets(data.structureLines.map(t=>({text:t})));
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(110,110,110);
+  para('Structura poate sa difere in functie de dorintele clientului sau nevoia spatiului.');
+  y += 3;
+  sectionTitle('Calcul tarifar si cost total');
+  para('1. Sesiune Foto la Locatie:', {bold:true});
+  para(`${data.hours} ore x ${data.rateHour} RON / ora = ${fmtRON(data.totalHours)}`);
+  para('2. Editare & Licentiere Imagini:', {bold:true});
+  para(`${data.images} cadre x ${data.rateImg} RON / imagine = ${fmtRON(data.totalImg)}`);
+  if(data.discount > 0){
+    para('3. Reducere aplicata:', {bold:true});
+    para(`${data.discount}% din ${fmtRON(data.subtotal)} = -${fmtRON(data.discountAmount)}`);
+  }
+  doc.setDrawColor(15,15,15); doc.setLineWidth(0.4);
+  checkSpace(10); doc.line(marginX, y, pageW-marginX, y); y += 6;
+  totalLine('TOTAL', fmtRON(data.total), {bold:true});
 
-  const page2 = `<div class="pdf-page">
-    ${head}
-    <div class="pdf-h1">CONTRACT DE PRESTĂRI SERVICII FOTOGRAFICE</div>
-    <div class="pdf-art">ART. 1. PĂRȚILE CONTRACTANTE</div>
-    <p class="pdf-p">Prezentul contract se încheie între:</p>
-    <p class="pdf-p">1. Prestator: SC CBB DIGITAL SRL, cu sediul în București, Sector 6, Spl. Independenței 313B, C9, 81, CUI 52562184, reprezentat de Ciprian Bădic, serie CI. RK538579, în calitate de Administrator,</p>
-    <p class="pdf-p">și</p>
-    <p class="pdf-p">2. Beneficiar: ${beneficiarLine}</p>
-    <div class="pdf-art">ART. 2. OBIECTUL CONTRACTULUI</div>
-    <p class="pdf-p">Obiectul contractului îl reprezintă prestarea de servicii de fotografie de arhitectură și design interior de către Prestator pentru locația/proiectul Beneficiarului, prelucrarea imaginilor și cedarea drepturilor de utilizare comercială neexclusivă conform clauzelor de mai jos.</p>
-    <div class="pdf-art">ART. 3. PREȚ ȘI STRUCTURĂ TARIFARĂ</div>
-    <p class="pdf-p">Remunerația este structurată în două componente distincte și cumulate:</p>
-    <ul class="pdf-list">
-      <li><b>Taxa de Sesiune Foto (Timp la locație): ${rateHour} RON / oră.</b> Acoperă prezența la locație, setarea echipamentului de iluminat și consultanța de specialitate. Timpul minim facturabil pentru o deplasare este de 2 ore (${rateHour*2} RON).</li>
-      <li><b>Taxa de Editare și Licențiere (Per imagine): ${rateImg} RON / imagine selectată.</b> Beneficiarul va selecta imaginile brute dintr-o galerie de vizualizare protejată. Beneficiarul se obligă să selecteze un minimum de 5 cadre pentru fiecare oră de fotografiere tarifată. Imaginile suplimentare peste acest prag vor fi facturate cu ${rateImg} RON / bucată.</li>
-    </ul>
-    <div class="pdf-art">ART. 4. DREPTURI ȘI OBLIGAȚII</div>
-    <p class="pdf-p" style="font-weight:600;margin-bottom:4px">Obligațiile Prestatorului:</p>
-    <ul class="pdf-list">
-      <li>Să realizeze fotografiile la un standard profesional ridicat.</li>
-      <li>Să livreze imaginile finale, editate profesional, în termen de 3-7 zile lucrătoare de la confirmarea selecției de către Beneficiar.</li>
-    </ul>
-  </div>`;
+  // PAGE 2+ — CONTRACT
+  newPage();
+  h1('CONTRACT DE PRESTARI SERVICII FOTOGRAFICE');
+  artTitle('ART. 1. PARTILE CONTRACTANTE');
+  para('Prezentul contract se incheie intre:');
+  para('1. Prestator: SC CBB DIGITAL SRL, cu sediul in Bucuresti, Sector 6, Spl. Independentei 313B, C9, 81, CUI 52562184, reprezentat de Ciprian Badic, serie CI. RK538579, in calitate de Administrator,');
+  para('si');
+  para(`2. Beneficiar: ${data.beneficiarLine}`);
+  artTitle('ART. 2. OBIECTUL CONTRACTULUI');
+  para('Obiectul contractului il reprezinta prestarea de servicii de fotografie de arhitectura si design interior de catre Prestator pentru locatia/proiectul Beneficiarului, prelucrarea imaginilor si cedarea drepturilor de utilizare comerciala neexclusiva conform clauzelor de mai jos.');
+  artTitle('ART. 3. PRET SI STRUCTURA TARIFARA');
+  para('Remuneratia este structurata in doua componente distincte si cumulate:');
+  bullets([
+    {text:`Taxa de Sesiune Foto (Timp la locatie): ${data.rateHour} RON / ora. Acopera prezenta la locatie, setarea echipamentului de iluminat si consultanta de specialitate. Timpul minim facturabil pentru o deplasare este de 2 ore (${data.rateHour*2} RON).`, bold:`Taxa de Sesiune Foto (Timp la locatie): ${data.rateHour} RON / ora.`},
+    {text:`Taxa de Editare si Licentiere (Per imagine): ${data.rateImg} RON / imagine selectata. Beneficiarul va selecta imaginile brute dintr-o galerie de vizualizare protejata. Beneficiarul se obliga sa selecteze un minimum de 5 cadre pentru fiecare ora de fotografiere tarifata. Imaginile suplimentare peste acest prag vor fi facturate cu ${data.rateImg} RON / bucata.`, bold:`Taxa de Editare si Licentiere (Per imagine): ${data.rateImg} RON / imagine selectata.`}
+  ]);
+  artTitle('ART. 4. DREPTURI SI OBLIGATII');
+  para('Obligatiile Prestatorului:', {bold:true});
+  bullets([
+    {text:'Sa realizeze fotografiile la un standard profesional ridicat.'},
+    {text:'Sa livreze imaginile finale, editate profesional, in termen de 3-7 zile lucratoare de la confirmarea selectiei de catre Beneficiar.'}
+  ]);
+  para('Obligatiile Beneficiarului:', {bold:true});
+  bullets([
+    {text:'Sa asigure accesul neingradit la locatie si pregatirea spatiului (curatenie generala, aprinderea luminilor la nevoie).'},
+    {text:'Sa achite contravaloarea serviciilor prestate in termenele agreate.'}
+  ]);
+  artTitle('ART. 5. DREPTURI DE AUTOR SI LICENTIERE');
+  para('Drepturile de Autor: Prestatorul pastreaza drepturile de autor depline asupra tuturor fotografiilor realizate (inclusiv cele neselectate de Beneficiar), rezervandu-si dreptul de a le utiliza exclusiv in scopul promovarii propriului portofoliu (website, social media, concursuri).');
+  para(`Licenta de Utilizare Comerciala: Prin achitarea Taxei de Editare si Licentiere (${data.rateImg} RON/imagine), Beneficiarul obtine o licenta neexclusiva, pe termen nelimitat, pentru utilizarea cadrelor respective in scopuri comerciale directe (website, platforme de rezervari tip Booking/Airbnb, social media, cataloage, PR). Aceasta licenta este netransmisibila tertilor fara acordul scris al Prestatorului si achitarea unei taxe de sublicentiere.`);
+  artTitle('ART. 6. DISPOZITII FINALE SI FORTA MAJORA');
+  para('Forta majora apara de raspundere partea care o invoca, in conditiile legii. Orice modificare a prezentului contract se va face exclusiv prin act aditional semnat de ambele parti. Litigiile se vor solutiona pe cale amiabila, sau, in caz contrar, de catre instantele judecatoresti competente din Romania.');
 
-  const page3 = `<div class="pdf-page">
-    ${head}
-    <p class="pdf-p" style="font-weight:600;margin-bottom:4px">Obligațiile Beneficiarului:</p>
-    <ul class="pdf-list">
-      <li>Să asigure accesul neîngrădit la locație și pregătirea spațiului (curățenie generală, aprinderea luminilor la nevoie).</li>
-      <li>Să achite contravaloarea serviciilor prestate în termenele agreate.</li>
-    </ul>
-    <div class="pdf-art">ART. 5. DREPTURI DE AUTOR ȘI LICENȚIERE</div>
-    <p class="pdf-p"><b>Drepturile de Autor:</b> Prestatorul păstrează drepturile de autor depline asupra tuturor fotografiilor realizate (inclusiv cele neselectate de Beneficiar), rezervându-și dreptul de a le utiliza exclusiv în scopul promovării propriului portofoliu (website, social media, concursuri).</p>
-    <p class="pdf-p"><b>Licența de Utilizare Comercială:</b> Prin achitarea Taxei de Editare și Licențiere (${rateImg} RON/imagine), Beneficiarul obține o licență neexclusivă, pe termen nelimitat, pentru utilizarea cadrelor respective în scopuri comerciale directe (website, platforme de rezervări tip Booking/Airbnb, social media, cataloage, PR). Această licență este netransmisibilă terților fără acordul scris al Prestatorului și achitarea unei taxe de sublicențiere.</p>
-    <div class="pdf-art">ART. 6. DISPOZIȚII FINALE ȘI FORȚĂ MAJORĂ</div>
-    <p class="pdf-p">Forța majoră apără de răspundere partea care o invocă, în condițiile legii. Orice modificare a prezentului contract se va face exclusiv prin act adițional semnat de ambele părți. Litigiile se vor soluționa pe cale amiabilă, sau, în caz contrar, de către instanțele judecătorești competente din România.</p>
-    <div class="pdf-sign">
-      <div><b>PRESTATOR</b>CIPRIAN BADIC, CBB DIGITAL SRL<div class="line">Semnătură: .................................</div></div>
-      <div><b>BENEFICIAR</b>Nume: ${esc(client)}<div class="line">Semnătură: .................................</div></div>
-    </div>
-  </div>`;
+  checkSpace(40); y += 15;
+  doc.setFont('helvetica','bold'); doc.setFontSize(10);
+  doc.text('PRESTATOR', marginX, y);
+  doc.text('BENEFICIAR', pageW/2 + 5, y);
+  doc.setFont('helvetica','normal'); y += 5;
+  doc.text('CIPRIAN BADIC, CBB DIGITAL SRL', marginX, y);
+  doc.text(`Nume: ${data.client}`, pageW/2 + 5, y);
+  y += 14;
+  doc.text('Semnatura: .................................', marginX, y);
+  doc.text('Semnatura: .................................', pageW/2 + 5, y);
 
-  document.getElementById('pdfRoot').innerHTML = page1+page2+page3;
+  return doc;
 }
 
 /* ---------------- oferte trimise ---------------- */
@@ -799,6 +859,16 @@ function computeTotal(){
   return subtotal - subtotal*discount/100;
 }
 
+async function ensureGalleryClient(name, project){
+  const trimmed = (name||'').trim();
+  if(!trimmed || trimmed === 'Client') return;
+  const { data: existing } = await sb.from('photocrm_clients').select('id').eq('client_name', trimmed).maybeSingle();
+  if(existing) return;
+  const slug = await uniqueSlug(slugify(project || trimmed));
+  const { error } = await sb.from('photocrm_clients').insert({ client_name:trimmed, project_name:project||null, slug });
+  if(!error) loadClients();
+}
+
 async function saveOffer(){
   const payload = {
     client_name: $('ofClient').value.trim() || 'Client',
@@ -826,27 +896,61 @@ async function saveOffer(){
     const { data } = await sb.from('photocrm_offers').insert(payload).select().single();
     if(data) editingOfferId = data.id;
   }
+  await ensureGalleryClient(payload.client_name, payload.project_name);
   loadOffers();
 }
 
 document.getElementById('genPdfBtn').addEventListener('click', ()=>{
-  buildPdf();
-  saveOffer();
-  const client = $('ofClient').value.trim() || 'client';
   const btn = document.getElementById('genPdfBtn');
   const oldLabel = btn.textContent;
-  btn.textContent = 'Se generează…';
-  const opt = {
-    margin:0,
-    filename:`Oferta_${client.replace(/\s+/g,'_')}.pdf`,
-    image:{type:'jpeg', quality:0.98},
-    html2canvas:{scale:2, useCORS:true, windowWidth:794, windowHeight:document.getElementById('pdfRoot').scrollHeight},
-    jsPDF:{unit:'mm', format:'a4', orientation:'portrait'},
-    pagebreak:{mode:['css'], after:'.pdf-page'}
-  };
-  html2pdf().set(opt).from(document.getElementById('pdfRoot')).save()
-    .catch(err=>{ console.error('Eroare generare PDF:', err); alert('Eroare la generarea PDF: '+(err && err.message ? err.message : err)); })
-    .finally(()=>{ btn.textContent = oldLabel; });
+  try{
+    const client = $('ofClient').value.trim() || 'Client';
+    const web = $('ofWeb').value.trim();
+    const project = $('ofProject').value.trim() || client;
+    const type = $('ofType').value;
+    const hours = parseFloat($('ofHours').value)||0;
+    const rateHour = parseFloat($('ofRateHour').value)||0;
+    const images = parseFloat($('ofImages').value)||0;
+    const rateImg = parseFloat($('ofRateImg').value)||0;
+    const discount = parseFloat($('ofDiscount').value)||0;
+    const totalHours = hours*rateHour;
+    const totalImg = images*rateImg;
+    const subtotal = totalHours+totalImg;
+    const discountAmount = subtotal*discount/100;
+    const total = subtotal-discountAmount;
+    const nr = $('ofNr').value.trim() || '-';
+    const dateVal = $('ofDate').value ? new Date($('ofDate').value) : new Date();
+    const dateStr = dateVal.toLocaleDateString('ro-RO');
+    const structureLines = $('ofStructure').value.split('\n').map(s=>s.trim()).filter(Boolean).map(stripDia);
+    const phone = $('ofPhone').value.trim();
+    const company = $('ofCompany').value.trim();
+    const companyAddress = $('ofCompanyAddress').value.trim();
+    const cui = $('ofCui').value.trim();
+    const codFiscal = $('ofCodFiscal').value.trim();
+
+    let beneficiarLine = web ? `${stripDia(client)} - ${stripDia(web)}` : stripDia(client);
+    const beneficiarDetails = [];
+    if(company) beneficiarDetails.push(`reprezentat prin ${stripDia(company)}`);
+    if(companyAddress) beneficiarDetails.push(`cu sediul in ${stripDia(companyAddress)}`);
+    if(cui) beneficiarDetails.push(`CUI ${stripDia(cui)}`);
+    if(codFiscal) beneficiarDetails.push(`Cod Fiscal ${stripDia(codFiscal)}`);
+    if(phone) beneficiarDetails.push(`Telefon ${stripDia(phone)}`);
+    if(beneficiarDetails.length) beneficiarLine += `, ${beneficiarDetails.join(', ')}`;
+
+    const doc = buildOfferPdf({
+      client: stripDia(client), project: stripDia(project), type: stripDia(type),
+      hours, rateHour, images, rateImg, discount,
+      totalHours, totalImg, subtotal, discountAmount, total,
+      nr: stripDia(nr), dateStr, structureLines, beneficiarLine
+    });
+    doc.save(`Oferta_${client.replace(/\s+/g,'_')}.pdf`);
+    saveOffer();
+  } catch(err){
+    console.error('Eroare generare PDF:', err);
+    alert('Eroare la generarea PDF: '+(err && err.message ? err.message : err));
+  } finally {
+    btn.textContent = oldLabel;
+  }
 });
 
 document.getElementById('saveOfferBtn').addEventListener('click', async ()=>{
