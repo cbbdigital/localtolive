@@ -453,8 +453,8 @@ async function deleteClient(id){
   const c = clients.find(x=>x.id===id);
   if(!c) return;
   if(!confirm(`Ștergi clientul "${c.client_name}" și toate pozele lui? Acțiunea nu poate fi anulată.`)) return;
-  const { data: photos } = await sb.from('photocrm_photos').select('storage_path').eq('client_id', id);
-  const paths = (photos||[]).map(p=>p.storage_path);
+  const { data: photos } = await sb.from('photocrm_photos').select('storage_path, original_path').eq('client_id', id);
+  const paths = (photos||[]).flatMap(p=>[p.storage_path, p.original_path].filter(Boolean));
   if(paths.length) await sb.storage.from(BUCKET).remove(paths);
   await sb.from('photocrm_photos').delete().eq('client_id', id);
   await sb.from('photocrm_clients').delete().eq('id', id);
@@ -552,6 +552,11 @@ function downscale(file, maxDim=1600, quality=0.82){
   });
 }
 
+function fileExt(name){
+  const m = /\.([a-zA-Z0-9]+)$/.exec(name||'');
+  return m ? m[1].toLowerCase() : 'jpg';
+}
+
 document.getElementById('galInput').addEventListener('change', async function(){
   if(!currentClient) return;
   const files = [...this.files];
@@ -559,11 +564,22 @@ document.getElementById('galInput').addEventListener('change', async function(){
   const { data: existing } = await sb.from('photocrm_photos').select('position').eq('client_id', currentClient.id).order('position', {ascending:false}).limit(1);
   let pos = existing && existing.length ? existing[0].position+1 : 0;
   for(const f of files){
+    // versiune redimensionata, folosita doar pentru grila din admin si pentru previzualizarea filigranata a clientului
     const blob = await downscale(f);
-    const path = `${currentClient.slug}/${uuid()}.jpg`;
-    const { error: upErr } = await sb.storage.from(BUCKET).upload(path, blob, {contentType:'image/jpeg'});
+    const previewPath = `${currentClient.slug}/${uuid()}.jpg`;
+    const { error: upErr } = await sb.storage.from(BUCKET).upload(previewPath, blob, {contentType:'image/jpeg'});
     if(upErr){ alert('Eroare la upload: '+upErr.message); continue; }
-    await sb.from('photocrm_photos').insert({ client_id:currentClient.id, storage_path:path, position:pos++ });
+
+    // fisierul original, neatins, incarcat intocmai — folosit exclusiv pentru linkul de descarcare (calitate completa)
+    const originalPath = `${currentClient.slug}/originals/${uuid()}.${fileExt(f.name)}`;
+    const { error: origErr } = await sb.storage.from(BUCKET).upload(originalPath, f, {contentType: f.type || 'application/octet-stream'});
+
+    await sb.from('photocrm_photos').insert({
+      client_id: currentClient.id,
+      storage_path: previewPath,
+      original_path: origErr ? null : originalPath,
+      position: pos++
+    });
   }
   loadPhotos();
 });
@@ -571,11 +587,11 @@ document.getElementById('galInput').addEventListener('change', async function(){
 async function loadPhotos(){
   if(!currentClient){ renderGrid([]); return; }
   const { data, error } = await sb.from('photocrm_photos')
-    .select('id, storage_path')
+    .select('id, storage_path, original_path')
     .eq('client_id', currentClient.id)
     .order('position', {ascending:true});
   if(error){ renderGrid([]); return; }
-  const items = data.map(p=>({ id:p.id, path:p.storage_path, url: sb.storage.from(BUCKET).getPublicUrl(p.storage_path).data.publicUrl }));
+  const items = data.map(p=>({ id:p.id, path:p.storage_path, originalPath:p.original_path, url: sb.storage.from(BUCKET).getPublicUrl(p.storage_path).data.publicUrl }));
   renderGrid(items);
 }
 
@@ -584,12 +600,14 @@ function renderGrid(items){
   if(!items.length){ grid.innerHTML = `<div class="g-empty" id="gEmpty">${currentClient ? 'Nicio poză încărcată încă.' : 'Alege sau creează un client.'}</div>`; return; }
   grid.innerHTML = items.map(p=>`
     <div class="g-tile" style="background-image:url('${p.url}')" oncontextmenu="return false">
-      <button class="g-remove" onclick="removePhoto('${p.id}','${p.path}')" title="Șterge">×</button>
+      <button class="g-remove" onclick="removePhoto('${p.id}','${p.path}','${p.originalPath||''}')" title="Șterge">×</button>
     </div>`).join('');
 }
 
-async function removePhoto(id, path){
-  await sb.storage.from(BUCKET).remove([path]);
+async function removePhoto(id, path, originalPath){
+  const paths = [path];
+  if(originalPath) paths.push(originalPath);
+  await sb.storage.from(BUCKET).remove(paths);
   await sb.from('photocrm_photos').delete().eq('id', id);
   loadPhotos();
 }
