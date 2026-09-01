@@ -73,7 +73,8 @@ main{margin-left:var(--sidebar);padding:var(--pad) 64px;max-width:1180px}
 
 .g-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px}
 .g-tile{position:relative;aspect-ratio:3/2;background-size:cover;background-position:center;overflow:hidden;user-select:none}
-.g-remove{position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;border:none;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center}
+.g-remove{position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;border:none;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;z-index:2}
+.g-rotate{position:absolute;top:6px;left:6px;width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;border:none;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;z-index:2}
 .g-empty{padding:60px 0;text-align:center;color:var(--muted);font-size:13px;border:1px dashed var(--line)}
 
 .field-inline select{padding:11px 13px;border:1px solid var(--line);background:#fafafa;font-size:14px;min-width:220px}
@@ -638,11 +639,11 @@ document.getElementById('uploadSaveBtn').addEventListener('click', async ()=>{
 async function loadPhotos(){
   if(!currentClient){ renderGrid([]); return; }
   const { data, error } = await sb.from('photocrm_photos')
-    .select('id, storage_path, original_path')
+    .select('id, storage_path, original_path, rotation')
     .eq('client_id', currentClient.id)
     .order('position', {ascending:true});
   if(error){ renderGrid([]); return; }
-  const items = data.map(p=>({ id:p.id, path:p.storage_path, originalPath:p.original_path, url: sb.storage.from(BUCKET).getPublicUrl(p.storage_path).data.publicUrl }));
+  const items = data.map(p=>({ id:p.id, path:p.storage_path, originalPath:p.original_path, rotation:p.rotation||0, url: sb.storage.from(BUCKET).getPublicUrl(p.storage_path).data.publicUrl }));
   renderGrid(items);
 }
 
@@ -650,9 +651,16 @@ function renderGrid(items){
   const grid = document.getElementById('gGrid');
   if(!items.length){ grid.innerHTML = `<div class="g-empty" id="gEmpty">${currentClient ? 'Nicio poză încărcată încă.' : 'Alege sau creează un client.'}</div>`; return; }
   grid.innerHTML = items.map(p=>`
-    <div class="g-tile" style="background-image:url('${p.url}')" oncontextmenu="return false">
+    <div class="g-tile" style="background-image:url('${p.url}');transform:rotate(${p.rotation}deg)" oncontextmenu="return false">
+      <button class="g-rotate" onclick="rotatePhoto('${p.id}',${p.rotation})" title="Rotește">⟳</button>
       <button class="g-remove" onclick="removePhoto('${p.id}','${p.path}','${p.originalPath||''}')" title="Șterge">×</button>
     </div>`).join('');
+}
+
+async function rotatePhoto(id, current){
+  const next = (Number(current) + 90) % 360;
+  await sb.from('photocrm_photos').update({ rotation: next }).eq('id', id);
+  loadPhotos();
 }
 
 async function removePhoto(id, path, originalPath){
