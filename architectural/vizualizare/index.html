@@ -45,6 +45,9 @@ button{font-family:inherit;cursor:pointer}
 .lightbox{position:fixed;inset:0;background:rgba(8,8,8,.94);z-index:200;display:flex;align-items:center;justify-content:center;padding:28px;cursor:zoom-out}
 .lightbox .lb-body{max-width:100%;max-height:100%;display:flex;align-items:center;justify-content:center;cursor:default}
 .lightbox .lb-body img{max-width:100%;max-height:100%;object-fit:contain;user-select:none;-webkit-user-drag:none}
+.lightbox .lb-body img.rot-90{transform:rotate(90deg);max-width:calc(100vh - 56px);max-height:calc(100vw - 56px)}
+.lightbox .lb-body img.rot-180{transform:rotate(180deg)}
+.lightbox .lb-body img.rot-270{transform:rotate(270deg);max-width:calc(100vh - 56px);max-height:calc(100vw - 56px)}
 .lightbox .lb-loading{color:#eee;font-size:13px}
 .lightbox .lb-close{position:absolute;top:18px;right:24px;color:#fff;font-size:28px;line-height:1;background:none;border:none;cursor:pointer;opacity:.8;z-index:2}
 .lightbox .lb-close:hover{opacity:1}
@@ -206,12 +209,13 @@ async function renderLightboxContent(){
   const body = lbOverlay.querySelector('.lb-body');
   body.innerHTML = '<div class="lb-loading">Se încarcă…</div>';
   const photo = lbPhotos[lbIndex];
+  const rotClass = photo.rotation ? `rot-${photo.rotation}` : '';
   if(lbMode === 'download'){
-    body.innerHTML = `<img src="${photo.downloadSrc}">`;
+    body.innerHTML = `<img class="${rotClass}" src="${photo.downloadSrc}">`;
   }else{
     const big = await loadWatermarked(photo.previewSrc, 1800);
     if(myToken === lbLoadToken && lbOverlay){
-      body.innerHTML = `<img src="${big}" oncontextmenu="return false">`;
+      body.innerHTML = `<img class="${rotClass}" src="${big}" oncontextmenu="return false">`;
     }
   }
 }
@@ -272,7 +276,7 @@ async function init(){
   }
 
   const { data: photoRows } = await sb.from('photocrm_photos')
-    .select('id, storage_path, original_path')
+    .select('id, storage_path, original_path, rotation')
     .eq('client_id', client.id)
     .order('position', {ascending:true});
 
@@ -280,7 +284,8 @@ async function init(){
     id: p.id,
     previewSrc: publicUrl(p.storage_path),
     downloadSrc: p.original_path ? publicUrl(p.original_path) : publicUrl(p.storage_path),
-    ext: p.original_path ? extFromPath(p.original_path) : 'jpg'
+    ext: p.original_path ? extFromPath(p.original_path) : 'jpg',
+    rotation: p.rotation || 0
   }));
 
   const title = client.project_name || client.client_name;
@@ -296,7 +301,7 @@ async function init(){
   if(validDownload){
     html += `<div class="top-actions"><button class="btn-dark" id="zipAllBtn">Descarcă tot (.zip)</button></div>`;
     html += '<div class="g-grid" id="gGrid">' + photos.map((p,i)=>`
-      <div class="g-tile" data-i="${i}">
+      <div class="g-tile" data-i="${i}" style="${p.rotation ? `transform:rotate(${p.rotation}deg)` : ''}">
         <img src="${p.previewSrc}" loading="lazy">
         <button class="g-dl" data-i="${i}">Descarcă</button>
       </div>`).join('') + '</div>';
@@ -324,7 +329,10 @@ async function init(){
     photos.forEach(async (p, i)=>{
       const dataUrl = await loadWatermarked(p.previewSrc, 1280);
       const el = document.getElementById(`tile-${i}`);
-      if(el) el.style.backgroundImage = `url('${dataUrl}')`;
+      if(el){
+        el.style.backgroundImage = `url('${dataUrl}')`;
+        if(p.rotation) el.style.transform = `rotate(${p.rotation}deg)`;
+      }
     });
     document.querySelectorAll('.g-tile').forEach(tile=>{
       tile.addEventListener('click', function(){
