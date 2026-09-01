@@ -511,7 +511,7 @@ async function copyAndOpen(url, btn){
 
 document.getElementById('genPreviewLinkBtn').addEventListener('click', async ()=>{
   if(!currentClient) return;
-  const url = `${CLIENT_ORIGIN}/client/?c=${encodeURIComponent(currentClient.slug)}`;
+  const url = `${CLIENT_ORIGIN}/vizualizare/?c=${encodeURIComponent(currentClient.slug)}`;
   await copyAndOpen(url, document.getElementById('genPreviewLinkBtn'));
 });
 
@@ -527,7 +527,7 @@ document.getElementById('genDownloadLinkBtn').addEventListener('click', async ()
     if(idx>-1) clients[idx].download_token = token;
     renderClientsTable();
   }
-  const url = `${CLIENT_ORIGIN}/client/?c=${encodeURIComponent(currentClient.slug)}&t=${encodeURIComponent(currentClient.download_token)}`;
+  const url = `${CLIENT_ORIGIN}/vizualizare/?c=${encodeURIComponent(currentClient.slug)}&t=${encodeURIComponent(currentClient.download_token)}`;
   await copyAndOpen(url, btn);
 });
 
