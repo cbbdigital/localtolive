@@ -43,10 +43,16 @@ button{font-family:inherit;cursor:pointer}
 .foot{margin-top:60px;font-size:11px;color:var(--muted);text-align:center}
 
 .lightbox{position:fixed;inset:0;background:rgba(8,8,8,.94);z-index:200;display:flex;align-items:center;justify-content:center;padding:28px;cursor:zoom-out}
-.lightbox img{max-width:100%;max-height:100%;object-fit:contain;user-select:none;-webkit-user-drag:none}
+.lightbox .lb-body{max-width:100%;max-height:100%;display:flex;align-items:center;justify-content:center;cursor:default}
+.lightbox .lb-body img{max-width:100%;max-height:100%;object-fit:contain;user-select:none;-webkit-user-drag:none}
 .lightbox .lb-loading{color:#eee;font-size:13px}
-.lightbox .lb-close{position:absolute;top:18px;right:24px;color:#fff;font-size:28px;line-height:1;background:none;border:none;cursor:pointer;opacity:.8}
+.lightbox .lb-close{position:absolute;top:18px;right:24px;color:#fff;font-size:28px;line-height:1;background:none;border:none;cursor:pointer;opacity:.8;z-index:2}
 .lightbox .lb-close:hover{opacity:1}
+.lightbox .lb-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.12);color:#fff;border:none;font-size:30px;width:52px;height:52px;border-radius:50%;cursor:pointer;opacity:.75;display:flex;align-items:center;justify-content:center;z-index:2}
+.lightbox .lb-nav:hover{opacity:1;background:rgba(255,255,255,.22)}
+.lightbox .lb-prev{left:16px}
+.lightbox .lb-next{right:16px}
+@media (max-width:640px){ .lightbox .lb-nav{width:42px;height:42px;font-size:24px} }
 </style>
 </head>
 <body>
@@ -87,15 +93,20 @@ async function loadWatermarked(url, maxDim=1280){
         ctx.save();
         ctx.globalAlpha = 0.14;
         ctx.fillStyle = '#ffffff';
-        ctx.font = `600 ${Math.max(14,Math.round(w*0.05))}px Inter, sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.translate(w/2, h/2);
         ctx.rotate(-Math.PI/9);
-        const stepX = w*0.62, stepY = h*0.32;
+        const mainSize = Math.max(14, Math.round(w*0.05));
+        const subSize = Math.max(9, Math.round(w*0.022));
+        const stepX = w*0.62, stepY = h*0.34;
         for(let y=-h; y<h*2; y+=stepY){
           for(let x=-w; x<w*2; x+=stepX){
-            ctx.fillText('CIPRIAN BADIC', x-w/2, y-h/2);
+            const cx = x-w/2, cy = y-h/2;
+            ctx.font = `600 ${mainSize}px Inter, sans-serif`;
+            ctx.fillText('CIPRIAN BADIC', cx, cy);
+            ctx.font = `500 ${subSize}px Inter, sans-serif`;
+            ctx.fillText('FOTOGRAFIE DE ARHITECTURA', cx, cy + mainSize*0.85);
           }
         }
         ctx.restore();
@@ -129,6 +140,11 @@ function baseName(client){
   return (client.slug||'poze').toLowerCase();
 }
 
+function extFromPath(path){
+  const m = /\.([a-zA-Z0-9]+)$/.exec(path||'');
+  return m ? m[1].toLowerCase() : 'jpg';
+}
+
 async function downloadAllZip(client, photos, btn){
   const old = btn.textContent;
   btn.disabled = true;
@@ -136,10 +152,10 @@ async function downloadAllZip(client, photos, btn){
     const zip = new JSZip();
     for(let i=0;i<photos.length;i++){
       btn.textContent = `Se pregătește ${i+1}/${photos.length}…`;
-      const res = await fetch(photos[i].url);
+      const res = await fetch(photos[i].downloadSrc);
       const blob = await res.blob();
       const num = String(i+1).padStart(2,'0');
-      zip.file(`${baseName(client)}-${num}.jpg`, blob);
+      zip.file(`${baseName(client)}-${num}.${photos[i].ext}`, blob);
     }
     btn.textContent = 'Se arhivează…';
     const content = await zip.generateAsync({type:'blob'});
@@ -162,33 +178,70 @@ function renderState(html){
   document.getElementById('app').innerHTML = html;
 }
 
-function openLightbox(innerHtml){
-  const overlay = document.createElement('div');
-  overlay.className = 'lightbox';
-  overlay.innerHTML = `<button class="lb-close" type="button">×</button>${innerHtml}`;
-  function close(){
-    overlay.remove();
-    document.removeEventListener('keydown', onKey);
-  }
-  function onKey(e){ if(e.key==='Escape') close(); }
-  overlay.addEventListener('click', (e)=>{ if(e.target===overlay) close(); });
-  overlay.querySelector('.lb-close').addEventListener('click', close);
-  document.addEventListener('keydown', onKey);
-  document.body.appendChild(overlay);
-  return overlay;
+let lbPhotos = [];
+let lbMode = 'preview';
+let lbIndex = 0;
+let lbOverlay = null;
+let lbLoadToken = 0;
+
+function closeLightbox(){
+  if(lbOverlay){ lbOverlay.remove(); lbOverlay = null; }
+  document.removeEventListener('keydown', onLbKey);
 }
 
-async function openPreviewLightbox(url){
-  const overlay = openLightbox('<div class="lb-loading">Se încarcă…</div>');
-  const big = await loadWatermarked(url, 1800);
-  if(document.body.contains(overlay)){
-    const loading = overlay.querySelector('.lb-loading');
-    if(loading) loading.outerHTML = `<img src="${big}" oncontextmenu="return false">`;
+function onLbKey(e){
+  if(e.key==='Escape') closeLightbox();
+  else if(e.key==='ArrowLeft') navLightbox(-1);
+  else if(e.key==='ArrowRight') navLightbox(1);
+}
+
+function navLightbox(dir){
+  if(!lbOverlay || lbPhotos.length<2) return;
+  lbIndex = (lbIndex + dir + lbPhotos.length) % lbPhotos.length;
+  renderLightboxContent();
+}
+
+async function renderLightboxContent(){
+  const myToken = ++lbLoadToken;
+  const body = lbOverlay.querySelector('.lb-body');
+  body.innerHTML = '<div class="lb-loading">Se încarcă…</div>';
+  const photo = lbPhotos[lbIndex];
+  if(lbMode === 'download'){
+    body.innerHTML = `<img src="${photo.downloadSrc}">`;
+  }else{
+    const big = await loadWatermarked(photo.previewSrc, 1800);
+    if(myToken === lbLoadToken && lbOverlay){
+      body.innerHTML = `<img src="${big}" oncontextmenu="return false">`;
+    }
   }
 }
 
-function openFullLightbox(url){
-  openLightbox(`<img src="${url}">`);
+function openLightbox(photos, index, mode){
+  lbPhotos = photos; lbIndex = index; lbMode = mode;
+  lbOverlay = document.createElement('div');
+  lbOverlay.className = 'lightbox';
+  lbOverlay.innerHTML = `
+    <button class="lb-close" type="button">×</button>
+    ${photos.length>1 ? '<button class="lb-nav lb-prev" type="button">‹</button><button class="lb-nav lb-next" type="button">›</button>' : ''}
+    <div class="lb-body"></div>
+  `;
+  lbOverlay.addEventListener('click', (e)=>{ if(e.target===lbOverlay) closeLightbox(); });
+  lbOverlay.querySelector('.lb-close').addEventListener('click', closeLightbox);
+  if(photos.length>1){
+    lbOverlay.querySelector('.lb-prev').addEventListener('click', (e)=>{ e.stopPropagation(); navLightbox(-1); });
+    lbOverlay.querySelector('.lb-next').addEventListener('click', (e)=>{ e.stopPropagation(); navLightbox(1); });
+  }
+  let touchStartX = null;
+  lbOverlay.addEventListener('touchstart', e=>{ touchStartX = e.touches[0].clientX; });
+  lbOverlay.addEventListener('touchend', e=>{
+    if(touchStartX===null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if(Math.abs(dx) > 40) navLightbox(dx>0 ? -1 : 1);
+    touchStartX = null;
+  });
+  document.addEventListener('keydown', onLbKey);
+  document.body.appendChild(lbOverlay);
+  renderLightboxContent();
 }
 
 async function init(){
@@ -219,11 +272,16 @@ async function init(){
   }
 
   const { data: photoRows } = await sb.from('photocrm_photos')
-    .select('id, storage_path')
+    .select('id, storage_path, original_path')
     .eq('client_id', client.id)
     .order('position', {ascending:true});
 
-  const photos = (photoRows||[]).map(p=>({ id:p.id, url: publicUrl(p.storage_path) }));
+  const photos = (photoRows||[]).map(p=>({
+    id: p.id,
+    previewSrc: publicUrl(p.storage_path),
+    downloadSrc: p.original_path ? publicUrl(p.original_path) : publicUrl(p.storage_path),
+    ext: p.original_path ? extFromPath(p.original_path) : 'jpg'
+  }));
 
   const title = client.project_name || client.client_name;
 
@@ -239,7 +297,7 @@ async function init(){
     html += `<div class="top-actions"><button class="btn-dark" id="zipAllBtn">Descarcă tot (.zip)</button></div>`;
     html += '<div class="g-grid" id="gGrid">' + photos.map((p,i)=>`
       <div class="g-tile" data-i="${i}">
-        <img src="${p.url}" loading="lazy">
+        <img src="${p.previewSrc}" loading="lazy">
         <button class="g-dl" data-i="${i}">Descarcă</button>
       </div>`).join('') + '</div>';
     renderState(html);
@@ -247,7 +305,7 @@ async function init(){
     document.querySelectorAll('.g-tile').forEach(tile=>{
       tile.addEventListener('click', function(){
         const i = Number(this.dataset.i);
-        openFullLightbox(photos[i].url);
+        openLightbox(photos, i, 'download');
       });
     });
     document.querySelectorAll('.g-dl').forEach(btn=>{
@@ -255,7 +313,7 @@ async function init(){
         e.stopPropagation();
         const i = Number(this.dataset.i);
         const num = String(i+1).padStart(2,'0');
-        downloadBlob(photos[i].url, `${baseName(client)}-${num}.jpg`);
+        downloadBlob(photos[i].downloadSrc, `${baseName(client)}-${num}.${photos[i].ext}`);
       });
     });
     sb.rpc('photocrm_track_download_view', { p_slug: slug, p_token: token }).then(()=>{}).catch(()=>{});
@@ -264,14 +322,14 @@ async function init(){
       <div class="g-tile" id="tile-${i}" data-i="${i}" oncontextmenu="return false"></div>`).join('') + '</div>';
     renderState(html);
     photos.forEach(async (p, i)=>{
-      const dataUrl = await loadWatermarked(p.url, 1280);
+      const dataUrl = await loadWatermarked(p.previewSrc, 1280);
       const el = document.getElementById(`tile-${i}`);
       if(el) el.style.backgroundImage = `url('${dataUrl}')`;
     });
     document.querySelectorAll('.g-tile').forEach(tile=>{
       tile.addEventListener('click', function(){
         const i = Number(this.dataset.i);
-        openPreviewLightbox(photos[i].url);
+        openLightbox(photos, i, 'preview');
       });
     });
     document.addEventListener('dragstart', e=>e.preventDefault());
