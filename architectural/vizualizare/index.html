@@ -27,9 +27,11 @@ button{font-family:inherit;cursor:pointer}
 .badge.download{background:#eaf6ee;color:#1a7f37}
 .note{font-size:12px;color:var(--muted);font-weight:300;max-width:560px;margin:0 0 28px}
 
-.g-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px}
+.g-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px 8px}
+.g-item{display:flex;flex-direction:column}
 .g-tile{position:relative;aspect-ratio:3/2;background-size:cover;background-position:center;overflow:hidden;border-radius:2px;background-color:#f1f1ef;cursor:zoom-in}
 .g-tile img{width:100%;height:100%;object-fit:cover;display:block;user-select:none;-webkit-user-drag:none}
+.g-caption{font-size:11.5px;color:var(--muted);font-weight:300;padding:6px 1px 0;line-height:1.35}
 .g-dl{position:absolute;bottom:8px;right:8px;background:rgba(255,255,255,.94);color:var(--ink);border:none;font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:8px 13px;border-radius:3px;opacity:0;transition:opacity .15s}
 .g-tile:hover .g-dl{opacity:1}
 @media (max-width:640px){ .g-dl{opacity:1} }
@@ -42,12 +44,14 @@ button{font-family:inherit;cursor:pointer}
 .state{padding:100px 0;text-align:center;color:var(--muted);font-size:14px}
 .foot{margin-top:60px;font-size:11px;color:var(--muted);text-align:center}
 
-.lightbox{position:fixed;inset:0;background:rgba(8,8,8,.94);z-index:200;display:flex;align-items:center;justify-content:center;padding:28px;cursor:zoom-out;box-sizing:border-box}
-.lightbox .lb-body{width:100%;height:100%;display:flex;align-items:center;justify-content:center;cursor:default}
+.lightbox{position:fixed;inset:0;background:rgba(8,8,8,.94);z-index:200;padding:28px;cursor:zoom-out;box-sizing:border-box}
+.lightbox .lb-stage{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.lightbox .lb-body{width:100%;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;cursor:default}
 .lightbox .lb-body img{display:block;max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;user-select:none;-webkit-user-drag:none}
 .lightbox .lb-body img.rot-90{transform:rotate(90deg);max-width:calc(100vh - 56px);max-height:calc(100vw - 56px)}
 .lightbox .lb-body img.rot-180{transform:rotate(180deg)}
 .lightbox .lb-body img.rot-270{transform:rotate(270deg);max-width:calc(100vh - 56px);max-height:calc(100vw - 56px)}
+.lightbox .lb-caption{color:#ccc;font-size:12.5px;font-weight:300;text-align:center;padding-top:14px;max-width:80%;min-height:1px;cursor:default}
 .lightbox .lb-loading{color:#eee;font-size:13px}
 .lightbox .lb-close{position:absolute;top:18px;right:24px;color:#fff;font-size:28px;line-height:1;background:none;border:none;cursor:pointer;opacity:.8;z-index:2}
 .lightbox .lb-close:hover{opacity:1}
@@ -207,9 +211,11 @@ function navLightbox(dir){
 async function renderLightboxContent(){
   const myToken = ++lbLoadToken;
   const body = lbOverlay.querySelector('.lb-body');
+  const caption = lbOverlay.querySelector('.lb-caption');
   body.innerHTML = '<div class="lb-loading">Se încarcă…</div>';
   const photo = lbPhotos[lbIndex];
   const rotClass = photo.rotation ? `rot-${photo.rotation}` : '';
+  if(caption) caption.textContent = photo.title || '';
   if(lbMode === 'download'){
     body.innerHTML = `<img class="${rotClass}" src="${photo.downloadSrc}">`;
   }else{
@@ -227,7 +233,10 @@ function openLightbox(photos, index, mode){
   lbOverlay.innerHTML = `
     <button class="lb-close" type="button">×</button>
     ${photos.length>1 ? '<button class="lb-nav lb-prev" type="button">‹</button><button class="lb-nav lb-next" type="button">›</button>' : ''}
-    <div class="lb-body"></div>
+    <div class="lb-stage">
+      <div class="lb-body"></div>
+      <div class="lb-caption"></div>
+    </div>
   `;
   lbOverlay.addEventListener('click', (e)=>{ if(e.target===lbOverlay) closeLightbox(); });
   lbOverlay.querySelector('.lb-close').addEventListener('click', closeLightbox);
@@ -276,7 +285,7 @@ async function init(){
   }
 
   const { data: photoRows } = await sb.from('photocrm_photos')
-    .select('id, storage_path, original_path, rotation')
+    .select('id, storage_path, original_path, rotation, title')
     .eq('client_id', client.id)
     .order('position', {ascending:true});
 
@@ -285,7 +294,8 @@ async function init(){
     previewSrc: publicUrl(p.storage_path),
     downloadSrc: p.original_path ? publicUrl(p.original_path) : publicUrl(p.storage_path),
     ext: p.original_path ? extFromPath(p.original_path) : 'jpg',
-    rotation: p.rotation || 0
+    rotation: p.rotation || 0,
+    title: p.title || ''
   }));
 
   const title = client.project_name || client.client_name;
@@ -301,9 +311,12 @@ async function init(){
   if(validDownload){
     html += `<div class="top-actions"><button class="btn-dark" id="zipAllBtn">Descarcă tot (.zip)</button></div>`;
     html += '<div class="g-grid" id="gGrid">' + photos.map((p,i)=>`
-      <div class="g-tile" data-i="${i}" style="${p.rotation ? `transform:rotate(${p.rotation}deg)` : ''}">
-        <img src="${p.previewSrc}" loading="lazy">
-        <button class="g-dl" data-i="${i}">Descarcă</button>
+      <div class="g-item">
+        <div class="g-tile" data-i="${i}" style="${p.rotation ? `transform:rotate(${p.rotation}deg)` : ''}">
+          <img src="${p.previewSrc}" loading="lazy">
+          <button class="g-dl" data-i="${i}">Descarcă</button>
+        </div>
+        ${p.title ? `<div class="g-caption">${escHtml(p.title)}</div>` : ''}
       </div>`).join('') + '</div>';
     renderState(html);
     document.getElementById('zipAllBtn').addEventListener('click', function(){ downloadAllZip(client, photos, this); });
@@ -323,8 +336,11 @@ async function init(){
     });
     sb.rpc('photocrm_track_download_view', { p_slug: slug, p_token: token }).then(()=>{}).catch(()=>{});
   }else{
-    html += '<div class="g-grid" id="gGrid">' + photos.map((_,i)=>`
-      <div class="g-tile" id="tile-${i}" data-i="${i}" oncontextmenu="return false"></div>`).join('') + '</div>';
+    html += '<div class="g-grid" id="gGrid">' + photos.map((p,i)=>`
+      <div class="g-item">
+        <div class="g-tile" id="tile-${i}" data-i="${i}" oncontextmenu="return false"></div>
+        ${p.title ? `<div class="g-caption">${escHtml(p.title)}</div>` : ''}
+      </div>`).join('') + '</div>';
     renderState(html);
     photos.forEach(async (p, i)=>{
       const dataUrl = await loadWatermarked(p.previewSrc, 1280);
