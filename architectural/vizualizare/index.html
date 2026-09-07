@@ -289,13 +289,13 @@ async function init(){
     .eq('client_id', client.id)
     .order('position', {ascending:true});
 
-  const photos = (photoRows||[]).map(p=>({
+  const photos = (photoRows||[]).map((p,i)=>({
     id: p.id,
     previewSrc: publicUrl(p.storage_path),
     downloadSrc: p.original_path ? publicUrl(p.original_path) : publicUrl(p.storage_path),
     ext: p.original_path ? extFromPath(p.original_path) : 'jpg',
     rotation: p.rotation || 0,
-    title: p.title || p.original_filename || ''
+    title: p.title || p.original_filename || `Poza ${i+1}`
   }));
 
   const title = client.project_name || client.client_name;
