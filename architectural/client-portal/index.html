@@ -656,13 +656,13 @@ async function loadPhotos(){
 function renderGrid(items){
   const grid = document.getElementById('gGrid');
   if(!items.length){ grid.innerHTML = `<div class="g-empty" id="gEmpty">${currentClient ? 'Nicio poză încărcată încă.' : 'Alege sau creează un client.'}</div>`; return; }
-  grid.innerHTML = items.map(p=>`
+  grid.innerHTML = items.map((p,i)=>`
     <div class="g-item">
       <div class="g-tile" style="background-image:url('${p.url}');transform:rotate(${p.rotation}deg)" oncontextmenu="return false">
         <button class="g-rotate" onclick="rotatePhoto('${p.id}',${p.rotation})" title="Rotește">⟳</button>
         <button class="g-remove" onclick="removePhoto('${p.id}','${p.path}','${p.originalPath||''}')" title="Șterge">×</button>
       </div>
-      ${p.filename ? `<div class="g-filename" title="Numele fișierului original">${escHtml(p.filename)}</div>` : ''}
+      <div class="g-filename" title="Așa apare la client dacă nu pui titlu personalizat">${escHtml(p.filename || `Poza ${i+1}`)}</div>
       <input class="g-title-input" type="text" placeholder="Titlu personalizat (opțional, înlocuiește numele fișierului)" value="${escAttr(p.title)}" onchange="updatePhotoTitle('${p.id}', this.value)">
     </div>`).join('');
 }
