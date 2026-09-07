@@ -285,7 +285,7 @@ async function init(){
   }
 
   const { data: photoRows } = await sb.from('photocrm_photos')
-    .select('id, storage_path, original_path, rotation, title')
+    .select('id, storage_path, original_path, rotation, title, original_filename')
     .eq('client_id', client.id)
     .order('position', {ascending:true});
 
@@ -295,7 +295,7 @@ async function init(){
     downloadSrc: p.original_path ? publicUrl(p.original_path) : publicUrl(p.storage_path),
     ext: p.original_path ? extFromPath(p.original_path) : 'jpg',
     rotation: p.rotation || 0,
-    title: p.title || ''
+    title: p.title || p.original_filename || ''
   }));
 
   const title = client.project_name || client.client_name;
