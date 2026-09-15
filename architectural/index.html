@@ -273,13 +273,23 @@
 
   /* ---------- DATE ---------- */
   const HERO=[
+    'Hotel Riviera Palace/Cadru-seara-twilight.jpg',
+    'Hotel Riviera Palace/Camera-fara-balcon2.jpg',
+    'Hotel Riviera Palace/Receptie-2.jpg',
+    'Jardine Hills/011 - Dormitor Casa 1.jpg',
+    'Jardine Hills/057 - Drona.jpg',
     'HIGHLIGHT/officialjpeg.jpg',
     'HIGHLIGHT/Golden Tulip 2.png','HIGHLIGHT/GoldenTulipReceptie.png','HIGHLIGHT/Golden Tulip 4.png',
-    'HIGHLIGHT/c9_110_2 copy.png','HIGHLIGHT/c9_110_8.png','HIGHLIGHT/building.png',
-    'HIGHLIGHT/Untitleddasd1.png','HIGHLIGHT/2 copy.jpg'
+    'HIGHLIGHT/building.png','HIGHLIGHT/Untitleddasd1.png'
   ];
 
   const projects=[
+    {id:'hotel-riviera-palace', title:'Hotel Riviera Palace', meta:'Hotel · București', dir:'Hotel Riviera Palace',
+      photos:['Cadru-seara-twilight.jpg','Receptie-1.jpg','Receptie-2.jpg','Receptie-3.jpg','Camera-cu-balcon4.jpg','Camera-fara-balcon1.1.jpg','Camera-fara-balcon2.jpg','Dormitor-Camera1.jpg','Detaliu-camera-mancare.jpg','Zona-mic-dejun1.jpg','Zona-mic-dejun3.jpg','021.jpg']},
+    {id:'jardine-hills', title:'Jardine Hills', meta:'Rezidențial · Buzău', dir:'Jardine Hills',
+      photos:['057 - Drona.jpg','044 - Pisc Mare .jpg','041 - Pisc Lat Mica spre Pisc mare.jpg','011 - Dormitor Casa 1.jpg','012 - Dormitor Casa 1.jpg','055 - Detaliu 5 Dormitor Casa 1.jpg']},
+    {id:'personal', title:'Personal', meta:'București', dir:'personal',
+      photos:['DSC04890.jpg','DSC04904.jpg','DSC04930.jpg','NationalRugbyStadiumAdT.png','insta.png','building.png']},
     {id:'golden-tulip', title:'Golden Tulip', meta:'Hotel · București', dir:'Proiect 1 - Golden Tulip',
       photos:['GoldenTulipReceptie.png','GoldenTulipDinning.png','Golden Tulip 4.png','Golden Tulip 3.png','Golden Tulip 2.png','Golden Tulip 1.png','Golden Tulip 5.png','GOldenTulipBaie11.png','GoldenTulipBaie2.png']},
     {id:'amber-house', title:'Amber House', meta:'Booking.com · București', dir:'Proiect 2 - Amber House',
@@ -293,9 +303,7 @@
     {id:'rent-3', title:'Rent Apartment III', meta:'Apartment · București', dir:'rent app 3',
       photos:['living.png','bucatarie1161point.png','baiemaibuna.png','Untitled1.png','Untitled2.png','Untitleddasd1.png']},
     {id:'blue-bike', title:'Blue Bike', meta:'Comercial · Constanța', dir:'Blue Bike',
-      photos:['officialjpeg.jpg','official2jpeg.jpg','official3.jpg']},
-    {id:'personal', title:'Personal', meta:'București', dir:'personal',
-      photos:['DSC04890.jpg','DSC04904.jpg','DSC04930.jpg','NationalRugbyStadiumAdT.png','insta.png','building.png']}
+      photos:['officialjpeg.jpg','official2jpeg.jpg','official3.jpg']}
   ];
   projects.forEach(p=>{p.full=p.photos.map(f=>p.dir+'/'+f);});
 
