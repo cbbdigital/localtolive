@@ -127,10 +127,56 @@ async function loadWatermarked(url, maxDim=1280){
   });
 }
 
+const DOWNLOAD_CAP = 9.5 * 1024 * 1024; // 9,5MB — dacă fișierul original e mai mare, se recomprimă la calitate maximă sub acest prag; dacă e deja sub, rămâne neatins
+
+async function capImageSize(blob, targetBytes){
+  if(!blob || blob.size <= targetBytes) return { blob, resized:false };
+  const objUrl = URL.createObjectURL(blob);
+  try{
+    const img = await new Promise((resolve,reject)=>{
+      const im = new Image();
+      im.onload = ()=>resolve(im);
+      im.onerror = ()=>reject(new Error('load fail'));
+      im.src = objUrl;
+    });
+    const canvas = document.createElement('canvas');
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    let quality = 0.97;
+    let out = await new Promise(res=>canvas.toBlob(res, 'image/jpeg', quality));
+    while(out && out.size > targetBytes && quality > 0.4){
+      quality -= 0.05;
+      out = await new Promise(res=>canvas.toBlob(res, 'image/jpeg', quality));
+    }
+    if(out && out.size > targetBytes){
+      let scale = 0.9;
+      const w0 = canvas.width, h0 = canvas.height;
+      while(out.size > targetBytes && scale > 0.5){
+        const c2 = document.createElement('canvas');
+        c2.width = Math.round(w0*scale);
+        c2.height = Math.round(h0*scale);
+        c2.getContext('2d').drawImage(canvas, 0, 0, c2.width, c2.height);
+        out = await new Promise(res=>c2.toBlob(res, 'image/jpeg', 0.8));
+        scale -= 0.1;
+      }
+    }
+    return { blob: out || blob, resized: true };
+  }catch(e){
+    return { blob, resized:false };
+  }finally{
+    URL.revokeObjectURL(objUrl);
+  }
+}
+
 async function downloadBlob(url, filename){
   try{
     const res = await fetch(url);
-    const blob = await res.blob();
+    let blob = await res.blob();
+    const capped = await capImageSize(blob, DOWNLOAD_CAP);
+    blob = capped.blob;
+    if(capped.resized) filename = filename.replace(/\.[a-zA-Z0-9]+$/, '.jpg');
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = filename;
@@ -160,9 +206,13 @@ async function downloadAllZip(client, photos, btn){
     for(let i=0;i<photos.length;i++){
       btn.textContent = `Se pregătește ${i+1}/${photos.length}…`;
       const res = await fetch(photos[i].downloadSrc);
-      const blob = await res.blob();
+      let blob = await res.blob();
+      let ext = photos[i].ext;
+      const capped = await capImageSize(blob, DOWNLOAD_CAP);
+      blob = capped.blob;
+      if(capped.resized) ext = 'jpg';
       const num = String(i+1).padStart(2,'0');
-      zip.file(`${baseName(client)}-${num}.${photos[i].ext}`, blob);
+      zip.file(`${baseName(client)}-${num}.${ext}`, blob);
     }
     btn.textContent = 'Se arhivează…';
     const content = await zip.generateAsync({type:'blob'});
