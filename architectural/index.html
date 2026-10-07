@@ -323,28 +323,49 @@
     const total=stage.querySelector('.total');
     viewer.innerHTML='';thumbs.innerHTML='';
     let idx=0;
-    photos.forEach((src,i)=>{
+    let thumbsBuilt=false;
+
+    // creeaza elementele de slide fara src (in afara de primul) - se incarca doar cand e nevoie
+    const slideEls = photos.map((src,i)=>{
       const d=document.createElement('img');
       d.className='slide'+(i===0?' on':'');
-      d.src=src;d.alt='';d.loading=i===0?'eager':'lazy';
+      d.alt='';
       viewer.appendChild(d);
-      const t=document.createElement('div');
-      t.className='t'+(i===0?' active':'');
-      t.style.backgroundImage=`url("${src}")`;
-      t.addEventListener('click',()=>go(i));
-      thumbs.appendChild(t);
+      return d;
     });
-    const slideEls=[...viewer.children], thumbEls=[...thumbs.children];
+    function ensureLoaded(i){
+      const el=slideEls[i];
+      if(el && !el.src) el.src=photos[i];
+    }
+    function preloadNeighbors(i){
+      ensureLoaded(i);
+      ensureLoaded((i+1)%photos.length);
+      ensureLoaded((i-1+photos.length)%photos.length);
+    }
+    preloadNeighbors(0);
+
     if(total)total.textContent=photos.length.toString().padStart(2,'0');
     function go(n){
       idx=(n+photos.length)%photos.length;
+      preloadNeighbors(idx);
       slideEls.forEach((e,i)=>e.classList.toggle('on',i===idx));
-      thumbEls.forEach((e,i)=>e.classList.toggle('active',i===idx));
+      if(thumbsBuilt)[...thumbs.children].forEach((e,i)=>e.classList.toggle('active',i===idx));
       if(cur)cur.textContent=(idx+1).toString().padStart(2,'0');
     }
     prev.addEventListener('click',()=>go(idx-1));
     next.addEventListener('click',()=>go(idx+1));
     toggle.addEventListener('click',function(){
+      if(!thumbsBuilt){
+        // thumbnail-urile se construiesc abia cand sunt cerute, ca sa nu incarce toate pozele la deschiderea paginii
+        photos.forEach((src,i)=>{
+          const t=document.createElement('div');
+          t.className='t'+(i===idx?' active':'');
+          t.style.backgroundImage=`url("${src}")`;
+          t.addEventListener('click',()=>go(i));
+          thumbs.appendChild(t);
+        });
+        thumbsBuilt=true;
+      }
       const open=thumbs.classList.toggle('open');
       this.textContent=open?'Hide thumbnails':'Show thumbnails';
     });
