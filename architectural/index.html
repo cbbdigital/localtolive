@@ -342,7 +342,12 @@
       ensureLoaded((i+1)%photos.length);
       ensureLoaded((i-1+photos.length)%photos.length);
     }
-    preloadNeighbors(0);
+    if(window.matchMedia('(max-width:900px)').matches){
+      // pe mobil pozele sunt afisate una sub alta (scroll), deci lazy-loading nativ functioneaza corect
+      slideEls.forEach((el,i)=>{ el.loading = i===0 ? 'eager' : 'lazy'; el.src = photos[i]; });
+    }else{
+      preloadNeighbors(0);
+    }
 
     if(total)total.textContent=photos.length.toString().padStart(2,'0');
     function go(n){
