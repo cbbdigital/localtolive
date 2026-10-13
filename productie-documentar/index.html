@@ -576,6 +576,18 @@ header p { color: var(--gray); margin-top: 1rem; font-size: 1.05rem; }
 .yt-page { padding-bottom: 6rem; }
 .yt-page .stat-card, .yt-page .retention-box { }
 @media (max-width: 740px) { .pd-hero { padding: 5rem 1.25rem 2.5rem; } .pd-hero h1 { font-size: 2.4rem; } }
+
+/* retenție + cifre pe 2 coloane */
+.yt-stats-split { display:grid; grid-template-columns:1.4fr 1fr; gap:1rem; margin-bottom:3.5rem; align-items:stretch; }
+.yt-stats-split .retention-box { margin:0; display:flex; flex-direction:column; }
+.yt-stats-split .retention-box svg { flex:1 1 0; min-height:180px; height:auto; }
+.yt-stats-split .stats-grid { grid-template-columns:repeat(2, minmax(0,1fr)); margin:0; }
+.yt-stats-split .stats-grid .stat-card:last-child { grid-column:span 2; }
+@media (max-width:800px) {
+  .yt-stats-split { grid-template-columns:1fr; }
+  .yt-stats-split .stats-grid { order:-1; }
+  .yt-stats-split .retention-box svg { flex:none; height:110px; min-height:0; }
+}
 </style>
 </head>
 <body>
@@ -726,14 +738,7 @@ header p { color: var(--gray); margin-top: 1rem; font-size: 1.05rem; }
   </div>
 
   <div class="stats-title">Ce a generat acest videoclip în 204 zile</div>
-  <div class="stats-grid">
-    <div class="stat-card"><div class="num accent" data-text="28,2K">0</div><div class="lbl">Vizionări</div></div>
-    <div class="stat-card"><div class="num" data-text="2,1K ore">0</div><div class="lbl">Durată vizionare</div></div>
-    <div class="stat-card"><div class="num accent" data-count="255" data-suffix="">0</div><div class="lbl">Abonați noi</div></div>
-    <div class="stat-card"><div class="num" data-text="4:23">0</div><div class="lbl">Durată medie</div></div>
-    <div class="stat-card"><div class="num blue" data-count="316" data-suffix="%" data-div="10">0</div><div class="lbl">Procent mediu vizionare</div></div>
-  </div>
-
+  <div class="yt-stats-split">
   <div class="retention-box">
     <div class="rb-head">
       <div class="t">Retenție pe parcursul videoclipului</div>
@@ -754,6 +759,14 @@ header p { color: var(--gray); margin-top: 1rem; font-size: 1.05rem; }
     <div class="retention-axis">
       <span>0:00</span><span>3:28</span><span>6:56</span><span>10:24</span><span>13:52</span>
     </div>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="num accent" data-text="28,2K">0</div><div class="lbl">Vizionări</div></div>
+    <div class="stat-card"><div class="num" data-text="2,1K ore">0</div><div class="lbl">Durată vizionare</div></div>
+    <div class="stat-card"><div class="num accent" data-count="255" data-suffix="">0</div><div class="lbl">Abonați noi</div></div>
+    <div class="stat-card"><div class="num" data-text="4:23">0</div><div class="lbl">Durată medie</div></div>
+    <div class="stat-card"><div class="num blue" data-count="316" data-suffix="%" data-div="10">0</div><div class="lbl">Procent mediu vizionare</div></div>
+  </div>
   </div>
 
   <div class="yt-quote">
