@@ -76,6 +76,23 @@
   .thumbs .t{aspect-ratio:3/2;background:var(--slot) center/cover;cursor:pointer;outline:0 solid var(--ink);transition:outline-width .12s}
   .thumbs .t.active{outline-width:2px}
 
+
+  /* Before / After slider (poza portret + before pe stanga, after pe dreapta; sliderul merge pe tot cadrul) */
+  .viewer .slide.ba{display:flex;align-items:center;justify-content:center;background:var(--bg)}
+  .ba-wrap{position:relative;overflow:hidden;background:var(--slot);touch-action:pan-y;cursor:ew-resize;user-select:none;-webkit-user-select:none}
+  .ba-wrap img{display:block;pointer-events:none;-webkit-user-drag:none;object-fit:cover}
+  .ba-after{position:absolute;inset:0;width:100%;height:100%}
+  .ba-left{position:absolute;inset:0;clip-path:inset(0 30% 0 0)}
+  .ba-moment{position:absolute;left:0;top:0;height:100%;overflow:hidden}
+  .ba-moment img{width:100%;height:100%}
+  .ba-bimg{position:absolute;top:0;bottom:0;right:0;overflow:hidden}
+  .ba-bimg img{position:absolute;inset:0;width:100%;height:100%;object-position:right center}
+  .ba-line{position:absolute;top:0;bottom:0;left:70%;width:2px;background:#fff;box-shadow:0 0 6px rgba(0,0,0,.35);transform:translateX(-1px);pointer-events:none}
+  .ba-knob{position:absolute;top:50%;left:70%;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;font-size:13px;letter-spacing:-1px;color:var(--ink);pointer-events:none}
+  .ba-tag{position:absolute;top:14px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#fff;background:rgba(0,0,0,.45);padding:5px 10px;pointer-events:none}
+  .ba-tag.r{right:14px}
+  @media(max-width:900px){.viewer .slide.ba{display:block}.ba-wrap{width:100%}.ba-tag{font-size:9px;padding:4px 7px;top:8px}.ba-tag.r{right:8px}.ba-knob{width:34px;height:34px;margin:-17px 0 0 -17px;font-size:10px}}
+
   /* Sub-sections */
   section.block{padding:var(--pad);padding-top:40px}
   .h-title{font-size:clamp(24px,2.6vw,34px);font-weight:600;letter-spacing:-.01em;margin-bottom:26px}
@@ -273,7 +290,8 @@
 
   /* ---------- DATE ---------- */
   const HERO=[
-    'Hotel Riviera Palace/Cadru-seara-twilight.jpg',
+    {ba:true, moment:'process/moment.jpg', mar:3213/5712, before:'process/before.jpg', after:'Hotel Riviera Palace/Cadru-seara-twilight.jpg', ar:2200/1470},
+    {ba:true, before:'process/before2.jpg', after:'Jardine Hills/012 - Dormitor Casa 1.jpg', ar:5218/3570},
     'The Xon Hotel/Shot 1.jpg',
     'The Xon Hotel/bedroom 2.jpg',
     'personal/bedroom.jpg',
@@ -312,6 +330,53 @@
   ];
   projects.forEach(p=>{p.full=p.photos.map(f=>p.dir+'/'+f);});
 
+  /* ---------- BEFORE / AFTER ---------- */
+  function makeBA(p){
+    const d=document.createElement('div');
+    d.className='ba';
+    const mw=p.moment?(p.mar/p.ar*100):0; // latimea panoului portret, in % din cadrul landscape
+    d.innerHTML=`<div class="ba-wrap"><img class="ba-after" src="${p.after}" alt=""><div class="ba-left">${p.moment?`<div class="ba-moment" style="width:${mw}%"><img src="${p.moment}" alt=""></div>`:''}<div class="ba-bimg" style="left:${mw}%"><img src="${p.before}" alt="" style="object-position:${p.moment?'right center':'center'}"></div><span class="ba-tag" style="left:calc(${mw}% + 14px)">Before</span></div><div class="ba-line"></div><div class="ba-knob">◀▶</div><span class="ba-tag r">After</span></div>`;
+    const wrap=d.querySelector('.ba-wrap'), left=d.querySelector('.ba-left'), line=d.querySelector('.ba-line'), knob=d.querySelector('.ba-knob');
+    function set(pct){
+      pct=Math.max(0,Math.min(100,pct));
+      left.style.clipPath=`inset(0 ${100-pct}% 0 0)`;
+      line.style.left=pct+'%';knob.style.left=pct+'%';
+    }
+    function fit(){
+      if(window.matchMedia('(max-width:900px)').matches){wrap.style.width='100%';wrap.style.height='';wrap.style.aspectRatio=p.ar;return;}
+      wrap.style.aspectRatio='';
+      const w=d.clientWidth,h=d.clientHeight; if(!w||!h)return;
+      let ww=w,hh=w/p.ar; if(hh>h){hh=h;ww=h*p.ar;}
+      wrap.style.width=ww+'px';wrap.style.height=hh+'px';
+    }
+    let drag=false;
+    const move=e=>{const r=wrap.getBoundingClientRect();set((e.clientX-r.left)/r.width*100);};
+    wrap.addEventListener('pointerdown',e=>{drag=true;wrap.setPointerCapture(e.pointerId);move(e);});
+    wrap.addEventListener('pointermove',e=>{if(drag)move(e);});
+    wrap.addEventListener('pointerup',()=>drag=false);
+    wrap.addEventListener('pointercancel',()=>drag=false);
+    window.addEventListener('resize',fit);
+    new ResizeObserver(fit).observe(d);
+    fit();set(0);
+    // demo automat la prima vizita: porneste de la After, parcurge tot cadrul pana la Before si revine la After
+    let cancelled=false;
+    const stop=()=>{cancelled=true;};
+    wrap.addEventListener('pointerdown',stop,{once:true});
+    if(p.moment) setTimeout(()=>{
+      if(cancelled) return;
+      const dur=6000, t0=performance.now();
+      const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+      (function tick(now){
+        if(cancelled) return;
+        const t=Math.min(1,(now-t0)/dur);
+        const k=1-Math.abs(2*t-1); // 0 -> 1 -> 0
+        set(100*ease(k));
+        if(t<1) requestAnimationFrame(tick); else set(0);
+      })(t0);
+    },700);
+    return d;
+  }
+
   /* ---------- SLIDESHOW (reutilizabil) ---------- */
   function initSlideshow(stage, photos){
     const viewer=stage.querySelector('.viewer');
@@ -323,14 +388,20 @@
     const total=stage.querySelector('.total');
     viewer.innerHTML='';thumbs.innerHTML='';
     let idx=0;
-    photos.forEach((src,i)=>{
-      const d=document.createElement('img');
-      d.className='slide'+(i===0?' on':'');
-      d.src=src;d.alt='';d.loading=i===0?'eager':'lazy';
+    const thumbSrc=p=>typeof p==='string'?p:p.after;
+    photos.forEach((p,i)=>{
+      let d;
+      if(typeof p==='string'){
+        d=document.createElement('img');
+        d.src=p;d.alt='';d.loading=i===0?'eager':'lazy';
+      }else{
+        d=makeBA(p);
+      }
+      d.classList.add('slide');if(i===0)d.classList.add('on');
       viewer.appendChild(d);
       const t=document.createElement('div');
       t.className='t'+(i===0?' active':'');
-      t.style.backgroundImage=`url("${src}")`;
+      t.style.backgroundImage=`url("${thumbSrc(p)}")`;
       t.addEventListener('click',()=>go(i));
       thumbs.appendChild(t);
     });
