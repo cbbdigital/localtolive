@@ -117,6 +117,17 @@
   .txt p{margin-bottom:18px;font-size:15px;color:#4a4a4a;font-weight:300;line-height:1.7}
   .about .portrait .slot{aspect-ratio:4/5}
 
+
+  /* Buline Despre / Contact */
+  .bubbles{position:relative;width:100%;max-width:420px;aspect-ratio:1/1;justify-self:end}
+  .bubbles .b{position:absolute;border-radius:50%;overflow:hidden;background:var(--slot);box-shadow:0 6px 24px rgba(0,0,0,.12)}
+  .bubbles .b img{width:100%;height:100%;object-fit:cover;display:block}
+  .bubbles .b1{width:64%;height:64%;left:0;top:10%}
+  .bubbles .b2{width:34%;height:34%;right:0;top:0}
+  .bubbles .b3{width:40%;height:40%;right:6%;bottom:0}
+  .about.about-contact{grid-template-columns:minmax(0,1fr) 380px}
+  @media(max-width:900px){.bubbles{max-width:340px;justify-self:start;margin-top:28px}.about.about-contact{grid-template-columns:1fr}}
+
   form{max-width:720px}
   .row{display:grid;grid-template-columns:1fr 1fr;gap:18px}
   .field{margin-bottom:22px}
@@ -228,18 +239,19 @@
 
   <!-- DESPRE -->
   <div class="view" id="v-despre">
-    <section class="block">
+    <section class="block"><div class="about">
       <div class="txt">
         <h2 class="h-title">Despre</h2>
         <p>Lucrez alături de arhitecți, dezvoltatori, designeri și agenții pentru a traduce spațiul construit în imagini clare și expresive.</p>
         <p>Abordarea mea combină sensibilitate arhitecturală, viziune artistică și rigoare tehnică. Fiecare proiect este fotografiat cu atenție la lumină, geometrie și detaliu, astfel încât rezultatul să reprezinte corect intenția de design.</p>
       </div>
-    </section>
+      <div class="bubbles"><div class="b b1"><img src="about/portrait.jpg" alt="Ciprian Badic" style="object-position:center 30%"></div><div class="b b2"><img src="about/bedroom.jpg" alt=""></div><div class="b b3"><img src="about/pool.jpg" alt=""></div></div>
+    </div></section>
   </div>
 
   <!-- CONTACT -->
   <div class="view" id="v-contact">
-    <section class="block">
+    <section class="block"><div class="about about-contact"><div>
       <h2 class="h-title">Contact</h2>
       <p class="lead" style="margin-bottom:36px">Pentru orice solicitare de preț sau rezervare, completează formularul de mai jos. Include cât mai multe informații relevante: locația proiectului, numărul de imagini, modul de utilizare și termenul de finalizare.</p>
       <form name="contact-architectural" method="POST" action="/" data-netlify="true" netlify-honeypot="bot-field" onsubmit="return submitContact(this,event)">
@@ -262,7 +274,9 @@
         <h3>Mulțumesc.</h3>
         <p>Am primit mesajul tău. Revin cât de curând, de obicei în aceeași zi.</p>
       </div>
-    </section>
+      </div>
+      <div class="bubbles"><div class="b b1"><img src="about/portrait.jpg" alt="Ciprian Badic" style="object-position:center 30%"></div><div class="b b2"><img src="about/bedroom.jpg" alt=""></div><div class="b b3"><img src="about/pool.jpg" alt=""></div></div>
+    </div></section>
   </div>
 
   <footer>
